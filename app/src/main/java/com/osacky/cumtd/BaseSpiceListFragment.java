@@ -23,6 +23,7 @@ public class BaseSpiceListFragment extends ListFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        setListShown(false);
         getListView().setClipToPadding(false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             getListView().setFitsSystemWindows(true);

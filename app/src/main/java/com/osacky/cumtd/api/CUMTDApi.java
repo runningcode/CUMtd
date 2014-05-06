@@ -9,6 +9,7 @@ import retrofit.http.GET;
 import retrofit.http.Query;
 import retrofit.http.QueryMap;
 
+@SuppressWarnings("unused")
 interface CUMTDApi {
 
     @GET("/GetStop")

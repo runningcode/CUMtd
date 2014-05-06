@@ -10,7 +10,6 @@ import com.octo.android.robospice.request.listener.PendingRequestListener;
 import com.osacky.cumtd.api.GetStopsSpiceRequest;
 import com.osacky.cumtd.models.StopList;
 
-import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.EFragment;
 
 import static com.osacky.cumtd.Constants.STOPS_CHANGESET_ID;
@@ -20,13 +19,10 @@ public class PlaceholderFragment extends BaseSpiceFragment implements
         PendingRequestListener<StopList> {
     private static final String TAG = "PlaceholderFragment";
 
-    public PlaceholderFragment() {
-    }
-
-    @AfterInject
-    void setTitle() {
-        ((MainActivity) getActivity()).onSectionAttached(sectionNumber);
-    }
+//    @AfterInject
+//    void setTitle() {
+//        ((MainActivity) getActivity()).onSectionAttached(sectionNumber);
+//    }
 
     @Override
     public void onStart() {

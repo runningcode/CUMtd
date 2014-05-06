@@ -6,8 +6,6 @@ import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MenuItemCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SearchView;
 import android.view.Menu;
@@ -16,41 +14,42 @@ import android.view.Window;
 
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
-import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.WindowFeature;
 
-@EActivity(R.layout.activity_main)
+@EActivity(R.layout.activity_main_map)
 @WindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS)
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
         LoadingInterface {
+    @FragmentById(R.id.map_fragment)
+    BusMapFragment mapFragment;
+//    @FragmentById(R.id.navigation_drawer)
+//    NavigationDrawerFragment mNavigationDrawerFragment;
 
-    @FragmentById(R.id.navigation_drawer)
-    NavigationDrawerFragment mNavigationDrawerFragment;
-
-    /**
-     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
-     */
-    private CharSequence mTitle;
+//    /**
+//     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
+//     */
+//    private CharSequence mTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mTitle = getTitle();
+        setProgressBarIndeterminateVisibility(false);
+//        mTitle = getTitle();
         SystemBarTintManager systemBarTintManager = new SystemBarTintManager(this);
         systemBarTintManager.setStatusBarTintEnabled(true);
         systemBarTintManager.setStatusBarTintColor(getResources().getColor(R.color.actionBarColor));
         handleIntent(getIntent());
     }
 
-    @AfterViews
-    void setUpNavigationDrawer() {
-        mNavigationDrawerFragment.setUp(
-                R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
-    }
+//    @AfterViews
+//    void setUpNavigationDrawer() {
+//        mNavigationDrawerFragment.setUp(
+//                R.id.navigation_drawer,
+//                (DrawerLayout) findViewById(R.id.drawer_layout));
+//    }
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
@@ -79,35 +78,36 @@ public class MainActivity extends ActionBarActivity
 
     }
 
-    public void onSectionAttached(int number) {
-        switch (number) {
-            case 1:
-                mTitle = getString(R.string.title_section1);
-                break;
-            case 2:
-                mTitle = getString(R.string.title_section2);
-                break;
-            case 3:
-                mTitle = getString(R.string.title_section3);
-                break;
-        }
-    }
+//    public void onSectionAttached(int number) {
+//        switch (number) {
+//            case 1:
+//                mTitle = getString(R.string.title_section1);
+//                break;
+//            case 2:
+//                mTitle = getString(R.string.title_section2);
+//                break;
+//            case 3:
+//                mTitle = getString(R.string.title_section3);
+//                break;
+//        }
+//    }
 
-    public void restoreActionBar() {
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(mTitle);
-    }
+//    public void restoreActionBar() {
+//        ActionBar actionBar = getSupportActionBar();
+//        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+//        actionBar.setDisplayShowTitleEnabled(true);
+//        actionBar.setTitle(mTitle);
+//    }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (!mNavigationDrawerFragment.isDrawerOpen()) {
+//        if (!mNavigationDrawerFragment.isDrawerOpen()) {
             // Only show items in the action bar relevant to this screen
             // if the drawer is not showing. Otherwise, let the drawer
             // decide what to show in the action bar.
             getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.license_menu, menu);
             MenuItem searchItem = menu.findItem(R.id.action_search);
 
             SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
@@ -115,10 +115,10 @@ public class MainActivity extends ActionBarActivity
             searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
             searchView.setQueryRefinementEnabled(true);
 
-            restoreActionBar();
+//            restoreActionBar();
             return true;
-        }
-        return super.onCreateOptionsMenu(menu);
+//        }
+//        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -131,6 +131,9 @@ public class MainActivity extends ActionBarActivity
                 SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                         StopSuggestionProvider.AUTHORITY, StopSuggestionProvider.MODE);
                 suggestions.clearHistory();
+                return true;
+            case (R.id.action_license):
+                LicensesFragment_.builder().build().show(getSupportFragmentManager(), "LICENSES_FRAG");
                 return true;
         }
         return super.onOptionsItemSelected(item);

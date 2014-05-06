@@ -28,7 +28,6 @@ import com.osacky.cumtd.models.StopList;
 import com.osacky.cumtd.models.StopPoint;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
-import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
@@ -60,18 +59,24 @@ public class BusMapFragment extends SupportMapFragment
     @FragmentArg(ARG_SECTION_NUMBER)
     int sectionNumber;
 
-    @AfterInject
-    void setTitle() {
-        ((MainActivity) getActivity()).onSectionAttached(sectionNumber);
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         GPS_ON = sharedPreferences.getBoolean(PREF_GPS, true);
-        if (GPS_ON) {
-            mLocationClient = new LocationClient(getActivity(), this, this);
+        mLocationClient = new LocationClient(getActivity(), this, this);
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        final String cacheKey = sharedPreferences.getString(STOPS_CHANGESET_ID, "");
+        getSpiceManager().addListenerIfPending(StopList.class, cacheKey, this);
+        try {
+            mLoadingInterface = (LoadingInterface) getActivity();
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Activity must implement LoadingInterface");
         }
     }
 
@@ -107,19 +112,14 @@ public class BusMapFragment extends SupportMapFragment
             mLocationClient.connect();
         }
         super.onStart();
+//        ((MainActivity) getActivity()).onSectionAttached(sectionNumber);
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        final String cacheKey = sharedPreferences.getString(STOPS_CHANGESET_ID, "");
-        getSpiceManager().addListenerIfPending(StopList.class, cacheKey, this);
-        try {
-            mLoadingInterface = (LoadingInterface) getActivity();
-        } catch (ClassCastException e) {
-            throw new ClassCastException("Activity must implement LoadingInterface");
-        }
+    public void onDetach() {
+        super.onDetach();
+        mClusterManager = null;
+        mLoadingInterface = null;
     }
 
     @Override
@@ -130,6 +130,7 @@ public class BusMapFragment extends SupportMapFragment
         if (mLocationClient != null) {
             mLocationClient.disconnect();
         }
+        mLoadingInterface.onLoadingFinished();
         super.onStop();
     }
 
@@ -164,8 +165,12 @@ public class BusMapFragment extends SupportMapFragment
 
     @UiThread
     void updateCluster() {
-        mClusterManager.cluster();
-        mLoadingInterface.onLoadingFinished();
+        if (mClusterManager != null) {
+            mClusterManager.cluster();
+        }
+        if (mLoadingInterface != null) {
+            mLoadingInterface.onLoadingFinished();
+        }
     }
 
     @Override
@@ -204,16 +209,9 @@ public class BusMapFragment extends SupportMapFragment
         SharedPreferences sharedPreferences = PreferenceManager
                 .getDefaultSharedPreferences(getActivity());
         GPS_ON = !sharedPreferences.getBoolean(PREF_GPS, true);
+        getMap().setMyLocationEnabled(GPS_ON);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(PREF_GPS, GPS_ON);
         editor.commit();
-        getMap().setMyLocationEnabled(GPS_ON);
-        if (GPS_ON) {
-            mLocationClient = new LocationClient(getActivity(), this, this);
-            mLocationClient.connect();
-        } else {
-            mLocationClient.disconnect();
-            mLocationClient = null;
-        }
     }
 }
