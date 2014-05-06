@@ -1,5 +1,6 @@
 package com.osacky.cumtd;
 
+import android.app.Activity;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -15,6 +16,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.maps.android.clustering.ClusterManager;
 import com.octo.android.robospice.SpiceManager;
 import com.octo.android.robospice.persistence.exception.SpiceException;
@@ -40,7 +42,8 @@ import static com.osacky.cumtd.Constants.STOPS_CHANGESET_ID;
 public class BusMapFragment extends SupportMapFragment
         implements PendingRequestListener<StopList>,
         GooglePlayServicesClient.ConnectionCallbacks,
-        GooglePlayServicesClient.OnConnectionFailedListener {
+        GooglePlayServicesClient.OnConnectionFailedListener,
+        GoogleMap.InfoWindowAdapter {
 
     @SuppressWarnings("unused")
     private static final String TAG = "BusMapFragment";
@@ -62,7 +65,6 @@ public class BusMapFragment extends SupportMapFragment
         mLocationClient = new LocationClient(getActivity(), this, this);
     }
 
-
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -82,6 +84,7 @@ public class BusMapFragment extends SupportMapFragment
         map.moveCamera(cameraUpdate);
         map.setOnCameraChangeListener(mClusterManager);
         map.setOnMarkerClickListener(mClusterManager);
+        map.setInfoWindowAdapter(this);
         map.setMyLocationEnabled(true);
         map.setPadding(0, config.getPixelInsetTop(true), config.getPixelInsetRight(),
                 config.getPixelInsetBottom());
@@ -90,11 +93,16 @@ public class BusMapFragment extends SupportMapFragment
     @Override
     public void onStart() {
         spiceManager.start(getActivity());
+        mLocationClient.connect();
+        super.onStart();
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         final String cacheKey = sharedPreferences.getString(STOPS_CHANGESET_ID, "");
         getSpiceManager().addListenerIfPending(StopList.class, cacheKey, this);
-        mLocationClient.connect();
-        super.onStart();
     }
 
     @Override
@@ -160,4 +168,13 @@ public class BusMapFragment extends SupportMapFragment
     }
 
 
+    @Override
+    public View getInfoWindow(Marker marker) {
+        return null;
+    }
+
+    @Override
+    public View getInfoContents(Marker marker) {
+        return MarkerInfoView_.build(getActivity()).bind(marker.getTitle(), marker.getSnippet());
+    }
 }

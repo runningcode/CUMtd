@@ -1,13 +1,9 @@
 package com.osacky.cumtd.models;
 
-import android.view.View;
-
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.maps.android.clustering.ClusterItem;
 
-public class StopPoint implements ClusterItem, GoogleMap.InfoWindowAdapter {
+public class StopPoint implements ClusterItem {
     String code;
     String stopId;
     double stopLat;
@@ -41,16 +37,5 @@ public class StopPoint implements ClusterItem, GoogleMap.InfoWindowAdapter {
             position = new LatLng(stopLat, stopLon);
         }
         return position;
-    }
-
-    @Override
-    public View getInfoWindow(Marker marker) {
-        return null;
-    }
-
-    @Override
-    public View getInfoContents(Marker marker) {
-        marker.setTitle("Blah");
-        return null;
     }
 }

@@ -42,7 +42,6 @@ public class StopPointRenderer extends DefaultClusterRenderer<StopPoint>
     protected void onBeforeClusterItemRendered(StopPoint item, MarkerOptions markerOptions) {
         super.onBeforeClusterItemRendered(item, markerOptions);
         markerOptions.title(item.getStopName());
-        markerOptions.snippet(mContext.getString(R.string.loading_text));
     }
 
     @Override
@@ -60,7 +59,7 @@ public class StopPointRenderer extends DefaultClusterRenderer<StopPoint>
 
     @Override
     public boolean onClusterItemClick(StopPoint item) {
-        final Marker marker  = getMarker(item);
+        final Marker marker = getMarker(item);
         mSpiceManager.addListenerIfPending(GetDeparturesResponse.class, item.getStopId(),
                 new GetStopResponseListener(item.getStopId(), marker));
         marker.showInfoWindow();
@@ -90,24 +89,28 @@ public class StopPointRenderer extends DefaultClusterRenderer<StopPoint>
         @Override
         public void onRequestSuccess(GetDeparturesResponse getDeparturesResponse) {
             final List<Departure> departures = getDeparturesResponse.getDepartures();
-            String snippet;
+            StringBuilder snippet = new StringBuilder();
             if (!departures.isEmpty()) {
-                final Departure firstDeparture = departures.get(0);
-                if (firstDeparture.getExpectedMins() == 0) {
-                    snippet = String.format(mContext.getString(R.string.arriving_now),
-                            firstDeparture.getHeadsign());
-                } else {
-                    snippet = mContext.getResources().getQuantityString(
-                            R.plurals.bus_arrival_time,
-                            firstDeparture.getExpectedMins(),
-                            firstDeparture.getHeadsign(),
-                            firstDeparture.getExpectedMins()
-                    );
+                String newline = "";
+                for (Departure departure : departures) {
+                    snippet.append(newline);
+                    if (departure.getExpectedMins() == 0) {
+                        snippet.append(String.format(mContext.getString(R.string.arriving_now),
+                                departure.getHeadsign()));
+                    } else {
+                        snippet.append(mContext.getResources().getQuantityString(
+                                R.plurals.bus_arrival_time,
+                                departure.getExpectedMins(),
+                                departure.getHeadsign(),
+                                departure.getExpectedMins()
+                        ));
+                    }
+                    newline ="\n";
                 }
             } else {
-                snippet = mContext.getString(R.string.no_departures);
+                snippet.append(mContext.getString(R.string.no_departures));
             }
-            mMarkerOptions.setSnippet(snippet);
+            mMarkerOptions.setSnippet(snippet.toString());
             if (mMarkerOptions.isInfoWindowShown()) {
                 mMarkerOptions.showInfoWindow();
             }
