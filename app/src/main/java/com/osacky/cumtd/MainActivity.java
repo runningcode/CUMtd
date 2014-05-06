@@ -1,10 +1,15 @@
 package com.osacky.cumtd;
 
+import android.app.SearchManager;
+import android.content.Intent;
 import android.os.Bundle;
+import android.provider.SearchRecentSuggestions;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -33,6 +38,7 @@ public class MainActivity extends ActionBarActivity
         SystemBarTintManager systemBarTintManager = new SystemBarTintManager(this);
         systemBarTintManager.setStatusBarTintEnabled(true);
         systemBarTintManager.setStatusBarTintColor(getResources().getColor(R.color.actionBarColor));
+        handleIntent(getIntent());
     }
 
     @AfterViews
@@ -97,6 +103,13 @@ public class MainActivity extends ActionBarActivity
             // if the drawer is not showing. Otherwise, let the drawer
             // decide what to show in the action bar.
             getMenuInflater().inflate(R.menu.main, menu);
+            MenuItem searchItem = menu.findItem(R.id.action_search);
+
+            SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
+            SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+            searchView.setQueryRefinementEnabled(true);
+
             restoreActionBar();
             return true;
         }
@@ -108,11 +121,28 @@ public class MainActivity extends ActionBarActivity
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case(R.id.action_clear_history):
+                SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+                        StopSuggestionProvider.AUTHORITY, StopSuggestionProvider.MODE);
+                suggestions.clearHistory();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        setIntent(intent);
+        handleIntent(intent);
+    }
+
+    void handleIntent(Intent intent) {
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+                    StopSuggestionProvider.AUTHORITY, StopSuggestionProvider.MODE);
+            suggestions.saveRecentQuery(query, null);
+        }
+    }
 }

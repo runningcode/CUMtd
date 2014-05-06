@@ -32,13 +32,17 @@ import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
+import org.androidannotations.annotations.OptionsItem;
+import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.UiThread;
 
 import static com.osacky.cumtd.Constants.ARG_SECTION_NUMBER;
 import static com.osacky.cumtd.Constants.CU_LON;
+import static com.osacky.cumtd.Constants.PREF_GPS;
 import static com.osacky.cumtd.Constants.STOPS_CHANGESET_ID;
 
 @EFragment
+@OptionsMenu(R.menu.map)
 public class BusMapFragment extends SupportMapFragment
         implements PendingRequestListener<StopList>,
         GooglePlayServicesClient.ConnectionCallbacks,
@@ -50,6 +54,7 @@ public class BusMapFragment extends SupportMapFragment
     private SpiceManager spiceManager = new SpiceManager(CUMTDApiService.class);
     private ClusterManager<StopPoint> mClusterManager;
     private LocationClient mLocationClient;
+    private static boolean GPS_ON = true;
 
     @FragmentArg(ARG_SECTION_NUMBER)
     int sectionNumber;
@@ -62,7 +67,11 @@ public class BusMapFragment extends SupportMapFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mLocationClient = new LocationClient(getActivity(), this, this);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        GPS_ON = sharedPreferences.getBoolean(PREF_GPS, true);
+        if (GPS_ON) {
+            mLocationClient = new LocationClient(getActivity(), this, this);
+        }
     }
 
     @Override
@@ -85,7 +94,7 @@ public class BusMapFragment extends SupportMapFragment
         map.setOnCameraChangeListener(mClusterManager);
         map.setOnMarkerClickListener(mClusterManager);
         map.setInfoWindowAdapter(this);
-        map.setMyLocationEnabled(true);
+        map.setMyLocationEnabled(GPS_ON);
         map.setPadding(0, config.getPixelInsetTop(true), config.getPixelInsetRight(),
                 config.getPixelInsetBottom());
     }
@@ -93,7 +102,9 @@ public class BusMapFragment extends SupportMapFragment
     @Override
     public void onStart() {
         spiceManager.start(getActivity());
-        mLocationClient.connect();
+        if (mLocationClient != null) {
+            mLocationClient.connect();
+        }
         super.onStart();
     }
 
@@ -110,7 +121,9 @@ public class BusMapFragment extends SupportMapFragment
         if (spiceManager.isStarted()) {
             spiceManager.shouldStop();
         }
-        mLocationClient.disconnect();
+        if (mLocationClient != null) {
+            mLocationClient.disconnect();
+        }
         super.onStop();
     }
 
@@ -167,7 +180,6 @@ public class BusMapFragment extends SupportMapFragment
         }
     }
 
-
     @Override
     public View getInfoWindow(Marker marker) {
         return null;
@@ -176,5 +188,23 @@ public class BusMapFragment extends SupportMapFragment
     @Override
     public View getInfoContents(Marker marker) {
         return MarkerInfoView_.build(getActivity()).bind(marker.getTitle(), marker.getSnippet());
+    }
+
+    @OptionsItem(R.id.action_location)
+    void toggleLocation() {
+        SharedPreferences sharedPreferences = PreferenceManager
+                .getDefaultSharedPreferences(getActivity());
+        GPS_ON = !sharedPreferences.getBoolean(PREF_GPS, true);
+        final SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(PREF_GPS, GPS_ON);
+        editor.commit();
+        getMap().setMyLocationEnabled(GPS_ON);
+        if (GPS_ON) {
+            mLocationClient = new LocationClient(getActivity(), this, this);
+            mLocationClient.connect();
+        } else {
+            mLocationClient.disconnect();
+            mLocationClient = null;
+        }
     }
 }

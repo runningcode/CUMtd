@@ -2,9 +2,10 @@
 <resources>
 
     <string name="app_name">CUMtd</string>
-    <string name="title_section1">Stop Map</string>
-    <string name="title_section2">Stop List</string>
+    <string name="title_section1">Map</string>
+    <string name="title_section2">Nearby Stops</string>
     <string name="title_section3">Section 3</string>
+
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
@@ -15,5 +16,8 @@
 
     <string name="action_licenses">Licenses</string>
     <string name="license_title">Third Party Licenses</string>
+    <string name="search_hint">Search for a stop</string>
+    <string name="toggle_gps">Toggle GPS</string>
+    <string name="clear_search_history">Clear Search History</string>
 
 </resources>
