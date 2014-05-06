@@ -51,10 +51,11 @@ public class BusMapFragment extends SupportMapFragment
 
     @SuppressWarnings("unused")
     private static final String TAG = "BusMapFragment";
+    private static boolean GPS_ON = true;
     private SpiceManager spiceManager = new SpiceManager(CUMTDApiService.class);
     private ClusterManager<StopPoint> mClusterManager;
     private LocationClient mLocationClient;
-    private static boolean GPS_ON = true;
+    private LoadingInterface mLoadingInterface;
 
     @FragmentArg(ARG_SECTION_NUMBER)
     int sectionNumber;
@@ -114,6 +115,11 @@ public class BusMapFragment extends SupportMapFragment
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         final String cacheKey = sharedPreferences.getString(STOPS_CHANGESET_ID, "");
         getSpiceManager().addListenerIfPending(StopList.class, cacheKey, this);
+        try {
+            mLoadingInterface = (LoadingInterface) getActivity();
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Activity must implement LoadingInterface");
+        }
     }
 
     @Override
@@ -133,11 +139,13 @@ public class BusMapFragment extends SupportMapFragment
 
     @Override
     public void onRequestNotFound() {
+        mLoadingInterface.onLoadingStarted();
         getSpiceManager().execute(GetStopsSpiceRequest.getCachedSpiceRequest(getActivity()), this);
     }
 
     @Override
     public void onRequestFailure(SpiceException spiceException) {
+        mLoadingInterface.onLoadingFinished();
         spiceException.printStackTrace();
     }
 
@@ -157,6 +165,7 @@ public class BusMapFragment extends SupportMapFragment
     @UiThread
     void updateCluster() {
         mClusterManager.cluster();
+        mLoadingInterface.onLoadingFinished();
     }
 
     @Override

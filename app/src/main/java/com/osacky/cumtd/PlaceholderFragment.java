@@ -12,17 +12,13 @@ import com.osacky.cumtd.models.StopList;
 
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.EFragment;
-import org.androidannotations.annotations.FragmentArg;
 
-import static com.osacky.cumtd.Constants.*;
+import static com.osacky.cumtd.Constants.STOPS_CHANGESET_ID;
 
 @EFragment(R.layout.fragment_main)
 public class PlaceholderFragment extends BaseSpiceFragment implements
         PendingRequestListener<StopList> {
     private static final String TAG = "PlaceholderFragment";
-
-    @FragmentArg(ARG_SECTION_NUMBER)
-    int sectionNumber;
 
     public PlaceholderFragment() {
     }

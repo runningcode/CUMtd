@@ -6,6 +6,7 @@ public class Stop {
     String stopId;
     String stopName;
     String code;
+    double distance;
     List<StopPoint> stopPoints;
 
     @Override
@@ -23,6 +24,10 @@ public class Stop {
 
     public String getCode() {
         return code;
+    }
+
+    public double getDistance() {
+        return distance;
     }
 
     public List<StopPoint> getStopPoints() {

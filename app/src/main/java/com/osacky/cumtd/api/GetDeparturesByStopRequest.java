@@ -7,12 +7,12 @@ import com.osacky.cumtd.models.GetDeparturesResponse;
 
 import java.util.HashMap;
 
-public class GetDeparturesByStop extends RetrofitSpiceRequest<GetDeparturesResponse, CUMTDApi> {
+public class GetDeparturesByStopRequest extends RetrofitSpiceRequest<GetDeparturesResponse, CUMTDApi> {
 
     private final String mStopId;
     private static final long cacheDuration = DurationInMillis.ONE_MINUTE;
 
-    public GetDeparturesByStop(String stopId) {
+    public GetDeparturesByStopRequest(String stopId) {
         super(GetDeparturesResponse.class, CUMTDApi.class);
         mStopId = stopId;
     }
@@ -23,7 +23,7 @@ public class GetDeparturesByStop extends RetrofitSpiceRequest<GetDeparturesRespo
     }
 
     public static CachedSpiceRequest<GetDeparturesResponse> getCachedSpiceRequest(String stopId) {
-        GetDeparturesByStop departuresByStop = new GetDeparturesByStop(stopId);
+        GetDeparturesByStopRequest departuresByStop = new GetDeparturesByStopRequest(stopId);
         return new CachedSpiceRequest<>(departuresByStop, stopId, cacheDuration);
     }
 }

@@ -12,16 +12,20 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
 
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.FragmentById;
+import org.androidannotations.annotations.WindowFeature;
 
 @EActivity(R.layout.activity_main)
+@WindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS)
 public class MainActivity extends ActionBarActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks,
+        LoadingInterface {
 
     @FragmentById(R.id.navigation_drawer)
     NavigationDrawerFragment mNavigationDrawerFragment;
@@ -54,13 +58,14 @@ public class MainActivity extends ActionBarActivity
         switch (position) {
             case 0:
                 fragmentManager.beginTransaction()
-                        .replace(R.id.container, BusMapFragment_.builder().sectionNumber(position
-                                + 1).build())
+                        .replace(
+                                R.id.container,
+                                BusMapFragment_.builder().sectionNumber(position + 1).build())
                         .commit();
                 break;
             case 1:
                 fragmentManager.beginTransaction()
-                        .replace(R.id.container, PlaceholderFragment_.builder().sectionNumber
+                        .replace(R.id.container, NearbyListFragment_.builder().sectionNumber
                                 (position + 1).build())
                         .commit();
                 break;
@@ -144,5 +149,15 @@ public class MainActivity extends ActionBarActivity
                     StopSuggestionProvider.AUTHORITY, StopSuggestionProvider.MODE);
             suggestions.saveRecentQuery(query, null);
         }
+    }
+
+    @Override
+    public void onLoadingStarted() {
+        setProgressBarIndeterminateVisibility(true);
+    }
+
+    @Override
+    public void onLoadingFinished() {
+        setProgressBarIndeterminateVisibility(false);
     }
 }

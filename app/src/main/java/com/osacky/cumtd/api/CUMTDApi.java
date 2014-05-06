@@ -26,4 +26,7 @@ interface CUMTDApi {
             @QueryMap() Map optional
     );
 
+    @GET("/GetStopsByLatLon?count=50")
+    GetStopResponse getStopsByLatLon(@Query("lat") double lat, @Query("lon") double lon);
+
 }

@@ -13,7 +13,7 @@ import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.octo.android.robospice.SpiceManager;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.PendingRequestListener;
-import com.osacky.cumtd.api.GetDeparturesByStop;
+import com.osacky.cumtd.api.GetDeparturesByStopRequest;
 import com.osacky.cumtd.models.Departure;
 import com.osacky.cumtd.models.GetDeparturesResponse;
 import com.osacky.cumtd.models.StopPoint;
@@ -78,7 +78,7 @@ public class StopPointRenderer extends DefaultClusterRenderer<StopPoint>
 
         @Override
         public void onRequestNotFound() {
-            mSpiceManager.execute(GetDeparturesByStop.getCachedSpiceRequest(mStopId), this);
+            mSpiceManager.execute(GetDeparturesByStopRequest.getCachedSpiceRequest(mStopId), this);
         }
 
         @Override
@@ -105,7 +105,7 @@ public class StopPointRenderer extends DefaultClusterRenderer<StopPoint>
                                 departure.getExpectedMins()
                         ));
                     }
-                    newline ="\n";
+                    newline = "\n";
                 }
             } else {
                 snippet.append(mContext.getString(R.string.no_departures));
