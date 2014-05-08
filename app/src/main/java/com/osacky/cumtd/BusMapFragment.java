@@ -202,9 +202,13 @@ public class BusMapFragment extends SupportMapFragment
     public void onConnected(Bundle bundle) {
         Location lastLocation = mLocationClient.getLastLocation();
         if (!restore) {
-            final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation
-                    .getLatitude(), lastLocation.getLongitude()), 16);
-            getMap().moveCamera(cameraUpdate);
+            try {
+                final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation
+                        .getLatitude(), lastLocation.getLongitude()), 16);
+                getMap().moveCamera(cameraUpdate);
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
         }
     }
 
