@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
           xmlns:map="http://schemas.android.com/apk/res-auto"
           android:id="@+id/map_fragment"
           android:name="com.osacky.cumtd.BusMapFragment_"
           android:layout_width="match_parent"
           android:layout_height="match_parent"
+          tools:context="com.osacky.cumtd.MainActivity_"
           map:cameraTargetLat="40.11"
           map:cameraTargetLng="-88.23"
           map:cameraZoom="13"

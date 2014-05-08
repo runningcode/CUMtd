@@ -49,6 +49,8 @@ public class StopsProvider extends ContentProvider {
     public static final String CONTENT_ITEM_TYPE = CURSOR_ITEM_BASE_TYPE + "/stop";
 
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + BASE_PATH);
+    public static final Uri SEARCH_URI = Uri.parse("content://" + AUTHORITY + "/" +
+            SUGGEST_URI_PATH_QUERY);
 
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {

@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <plurals name="bus_arrival_time">
-        <item quantity="zero">%1$s is arriving now</item>
         <item quantity="one">%1$s is arriving in %2$d min</item>
         <item quantity="other">%1$s is arriving in %2$d mins</item>
+    </plurals>
+
+    <plurals name="search_results">
+        <item quantity="one">%1$d result</item>
+        <item quantity="other">%1$d results</item>
     </plurals>
 </resources>

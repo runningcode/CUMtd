@@ -29,5 +29,6 @@
     <string name="view_source">View source</string>
     <string name="close">Close</string>
     <string name="app_icon_description">App icon</string>
+    <string name="no_results">No results found</string>
 
 </resources>

@@ -85,10 +85,10 @@ public class BusMapFragment extends SupportMapFragment
         super.onCreate(savedInstanceState);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         GPS_ON = sharedPreferences.getBoolean(PREF_GPS, true);
-        mLocationClient = new LocationClient(getActivity(), this, this);
         if (savedInstanceState == null) {
             restore = false;
         }
+        setRetainInstance(true);
     }
 
     @Override
@@ -97,6 +97,7 @@ public class BusMapFragment extends SupportMapFragment
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         final String cacheKey = sharedPreferences.getString(STOPS_CHANGESET_ID, "");
         getSpiceManager().addListenerIfPending(StopList.class, cacheKey, this);
+        mLocationClient = new LocationClient(getActivity(), this, this);
         try {
             mLoadingInterface = (LoadingInterface) getActivity();
         } catch (ClassCastException e) {
@@ -109,31 +110,30 @@ public class BusMapFragment extends SupportMapFragment
         super.onViewCreated(view, savedInstanceState);
         final SystemBarTintManager tintManager = new SystemBarTintManager(getActivity());
         final SystemBarTintManager.SystemBarConfig config = tintManager.getConfig();
-        final GoogleMap map = getMap();
-        if (map == null) {
+        if (getMap() == null) {
             Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_SHORT).show();
-            mLoadingInterface.onLoadingFinished();
             view.setPadding(0, config.getPixelInsetTop(true), config.getPixelInsetRight(),
                     config.getPixelInsetBottom());
             return;
         }
-
-        mClusterManager = new ClusterManager<>(getActivity(), map);
-        final StopPointRenderer stopPointRenderer = new StopPointRenderer(getActivity().getApplicationContext(), map,
-                mClusterManager, getSpiceManager(), busMarkers);
+        getMap().clear();
+        mClusterManager = new ClusterManager<>(getActivity().getApplicationContext(), getMap());
+        final StopPointRenderer stopPointRenderer = new StopPointRenderer(getActivity()
+                .getApplicationContext(), getMap(),
+                mClusterManager, getSpiceManager(), busMarkers
+        );
         mClusterManager.setRenderer(stopPointRenderer);
         mClusterManager.setOnClusterClickListener(stopPointRenderer);
         mClusterManager.setOnClusterItemClickListener(stopPointRenderer);
-
-        map.setOnCameraChangeListener(mClusterManager);
-        map.setOnMarkerClickListener(mClusterManager);
-        map.setInfoWindowAdapter(this);
-        map.setMyLocationEnabled(GPS_ON);
+        getMap().setOnCameraChangeListener(mClusterManager);
+        getMap().setOnMarkerClickListener(mClusterManager);
+        getMap().setInfoWindowAdapter(this);
+        getMap().setMyLocationEnabled(GPS_ON);
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             // this is a stupid hack since actionbarsize was returning zero
-            map.setPadding(0, 60, 0, 0);
+            getMap().setPadding(0, 60, 0, 0);
         } else {
-            map.setPadding(0, config.getPixelInsetTop(true), config.getPixelInsetRight(),
+            getMap().setPadding(0, config.getPixelInsetTop(true), config.getPixelInsetRight(),
                     config.getPixelInsetBottom());
         }
     }
@@ -151,7 +151,9 @@ public class BusMapFragment extends SupportMapFragment
     @Override
     public void onDetach() {
         super.onDetach();
+        mClusterManager.clearItems();
         mClusterManager = null;
+        mLocationClient = null;
         mLoadingInterface = null;
     }
 
@@ -270,6 +272,7 @@ public class BusMapFragment extends SupportMapFragment
     @Background
     public void passIntent(Intent intent) {
         assert intent != null;
+        assert intent.getData() != null;
         final Cursor cursor = getActivity().getContentResolver().query(intent.getData(), null,
                 null, null, null);
         assert cursor != null;

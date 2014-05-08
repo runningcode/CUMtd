@@ -10,6 +10,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -152,14 +153,22 @@ public class MainActivity extends ActionBarActivity
     void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
+            Log.i(TAG, query);
             SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                     StopSuggestionProvider.AUTHORITY, StopSuggestionProvider.MODE);
             suggestions.saveRecentQuery(query, null);
+            SearchResultsFragment_.builder().query(query).build().show(getSupportFragmentManager
+                    (), "RESULTS");
         } else if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             if (mapFragment != null) {
                 mapFragment.passIntent(intent);
             }
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        // this is to fix a crash with voice search (no call to super)
     }
 
     @Override
