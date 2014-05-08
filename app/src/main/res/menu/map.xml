@@ -7,6 +7,7 @@
         android:id="@+id/action_location"
         android:title="@string/toggle_gps"
         android:checkable="true"
+        android:orderInCategory="95"
         app:showAsAction="never"
         />
 

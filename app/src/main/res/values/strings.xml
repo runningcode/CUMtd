@@ -22,5 +22,11 @@
     <string name="clear_search_history">Clear Search History</string>
     <string name="stop_frag_title">Stop</string>
     <string name="global_settings_description">Search for bus stops</string>
+    <string name="action_search_settings">Global Search Settings</string>
+    <string name="about_menu">About</string>
+    <string name="data_provided">Data provided by CUMtd</string>
+    <string name="author">App created by Nelson Osacky, give him a hug if you see him</string>
+    <string name="view_source">View source</string>
+    <string name="close">Close</string>
 
 </resources>

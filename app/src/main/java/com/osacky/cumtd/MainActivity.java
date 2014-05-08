@@ -1,9 +1,11 @@
 package com.osacky.cumtd;
 
 import android.app.SearchManager;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
+import android.provider.Settings;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
@@ -16,6 +18,7 @@ import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.FragmentById;
+import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.WindowFeature;
 
 @EActivity(R.layout.activity_main_map)
@@ -28,6 +31,7 @@ public class MainActivity extends ActionBarActivity
     private static final String TAG = MainActivity.class.getName();
     @FragmentById(R.id.map_fragment)
     BusMapFragment mapFragment;
+
 //    @FragmentById(R.id.navigation_drawer)
 //    NavigationDrawerFragment mNavigationDrawerFragment;
 
@@ -44,7 +48,9 @@ public class MainActivity extends ActionBarActivity
         SystemBarTintManager systemBarTintManager = new SystemBarTintManager(this);
         systemBarTintManager.setStatusBarTintEnabled(true);
         systemBarTintManager.setStatusBarTintColor(getResources().getColor(R.color.actionBarColor));
-        handleIntent(getIntent());
+        if (savedInstanceState == null) {
+            handleIntent(getIntent());
+        }
     }
 
 //    @AfterViews
@@ -71,12 +77,8 @@ public class MainActivity extends ActionBarActivity
                                 (position + 1).build())
                         .commit();
                 break;
-            case 2:
-                fragmentManager.beginTransaction()
-                        .replace(R.id.container, PlaceholderFragment_.builder().sectionNumber
-                                (position + 1).build())
-                        .commit();
-                break;
+            default:
+                throw new IllegalArgumentException("Got a position of " + position);
         }
 
     }
@@ -110,38 +112,37 @@ public class MainActivity extends ActionBarActivity
         // if the drawer is not showing. Otherwise, let the drawer
         // decide what to show in the action bar.
         getMenuInflater().inflate(R.menu.main, menu);
-        getMenuInflater().inflate(R.menu.license_menu, menu);
         MenuItem searchItem = menu.findItem(R.id.action_search);
 
         SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-//        searchView.setQueryRefinementEnabled(true);
-
 //            restoreActionBar();
         return true;
 //        }
 //        return super.onCreateOptionsMenu(menu);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        switch (item.getItemId()) {
-            case (R.id.action_clear_history):
-                SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
-                        StopSuggestionProvider.AUTHORITY, StopSuggestionProvider.MODE);
-                suggestions.clearHistory();
-                return true;
-            case (R.id.action_license):
-                LicensesFragment_.builder().build().show(getSupportFragmentManager(), "LICENSES_FRAG");
-                return true;
-//            case (R.id.action_search):
-//                onSearchRequested();
+    @OptionsItem(R.id.action_search_settings)
+    void displaySearchSettings(MenuItem item) {
+        Intent intent = new Intent(Settings.ACTION_SEARCH_SETTINGS);
+        try {
+            startActivityForResult(intent, 1);
+        } catch (ActivityNotFoundException e) {
+            item.setVisible(false);
         }
-        return super.onOptionsItemSelected(item);
+    }
+
+    @OptionsItem(R.id.action_about)
+    void displayLicenses() {
+        AboutFragment_.builder().build().show(getSupportFragmentManager(), "ABOUT_FRAG");
+    }
+
+    @OptionsItem(R.id.action_clear_history)
+    void clearHistory() {
+        SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+                StopSuggestionProvider.AUTHORITY, StopSuggestionProvider.MODE);
+        suggestions.clearHistory();
     }
 
     @Override
@@ -157,7 +158,9 @@ public class MainActivity extends ActionBarActivity
                     StopSuggestionProvider.AUTHORITY, StopSuggestionProvider.MODE);
             suggestions.saveRecentQuery(query, null);
         } else if (Intent.ACTION_VIEW.equals(intent.getAction())) {
-            mapFragment.passIntent(intent);
+            if (mapFragment != null) {
+                mapFragment.passIntent(intent);
+            }
         }
     }
 

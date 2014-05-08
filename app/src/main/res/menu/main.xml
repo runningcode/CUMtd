@@ -16,4 +16,16 @@
           android:visible="false"
           />
 
+    <item
+        android:id="@+id/action_search_settings"
+        android:title="@string/action_search_settings"
+        android:orderInCategory="100"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_about"
+        android:title="@string/about_menu"
+        android:orderInCategory="101"
+        app:showAsAction="never"/>
+
 </menu>

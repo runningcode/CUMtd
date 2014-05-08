@@ -7,8 +7,6 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.google.gson.Gson;
-import com.octo.android.robospice.persistence.DurationInMillis;
-import com.octo.android.robospice.request.CachedSpiceRequest;
 import com.octo.android.robospice.request.retrofit.RetrofitSpiceRequest;
 import com.osacky.cumtd.StopsProvider;
 import com.osacky.cumtd.models.GetStopResponse;
@@ -31,7 +29,6 @@ import static com.osacky.cumtd.StopTable.STOP_ID;
 
 public class GetStopsSpiceRequest extends RetrofitSpiceRequest<StopList, CUMTDApi> {
 
-    private static final long cacheDuration = DurationInMillis.ALWAYS_RETURNED;
     private final SharedPreferences mSharedPreferences;
     private final ContentResolver contentResolver;
 
@@ -74,11 +71,5 @@ public class GetStopsSpiceRequest extends RetrofitSpiceRequest<StopList, CUMTDAp
                     StopList.class
             );
         }
-    }
-
-    public static CachedSpiceRequest<StopList> getCachedSpiceRequest(
-            @NotNull Context context) {
-        GetStopsSpiceRequest getStopsSpiceRequest = new GetStopsSpiceRequest(context);
-        return new CachedSpiceRequest<>(getStopsSpiceRequest, "stopsList", cacheDuration);
     }
 }

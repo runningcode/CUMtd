@@ -9,6 +9,8 @@ import android.database.Cursor;
 import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -61,6 +63,7 @@ public class BusMapFragment extends SupportMapFragment
     @SuppressWarnings("unused")
     private static final String TAG = "BusMapFragment";
     private static boolean GPS_ON = true;
+    private boolean restore = true;
     private SpiceManager spiceManager = new SpiceManager(CUMTDApiService.class);
     private ClusterManager<Stop> mClusterManager;
     private LocationClient mLocationClient;
@@ -76,6 +79,9 @@ public class BusMapFragment extends SupportMapFragment
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         GPS_ON = sharedPreferences.getBoolean(PREF_GPS, true);
         mLocationClient = new LocationClient(getActivity(), this, this);
+        if (savedInstanceState == null) {
+            restore = false;
+        }
     }
 
     @Override
@@ -99,10 +105,11 @@ public class BusMapFragment extends SupportMapFragment
         final GoogleMap map = getMap();
         if (map == null) {
             Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_SHORT).show();
+            mLoadingInterface.onLoadingFinished();
+            view.setPadding(0, config.getPixelInsetTop(true), config.getPixelInsetRight(),
+                    config.getPixelInsetBottom());
             return;
         }
-        final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(CU_LAT,
-                CU_LON), 13);
 
         mClusterManager = new ClusterManager<>(getActivity(), map);
         final StopPointRenderer stopPointRenderer = new StopPointRenderer(getActivity().getApplicationContext(), map,
@@ -110,8 +117,11 @@ public class BusMapFragment extends SupportMapFragment
         mClusterManager.setRenderer(stopPointRenderer);
         mClusterManager.setOnClusterClickListener(stopPointRenderer);
         mClusterManager.setOnClusterItemClickListener(stopPointRenderer);
-
-        map.moveCamera(cameraUpdate);
+        if (!restore) {
+            final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(CU_LAT,
+                    CU_LON), 13);
+            map.moveCamera(cameraUpdate);
+        }
         map.setOnCameraChangeListener(mClusterManager);
         map.setOnMarkerClickListener(mClusterManager);
         map.setInfoWindowAdapter(this);
@@ -156,7 +166,7 @@ public class BusMapFragment extends SupportMapFragment
     @Override
     public void onRequestNotFound() {
         mLoadingInterface.onLoadingStarted();
-        getSpiceManager().execute(GetStopsSpiceRequest.getCachedSpiceRequest(getActivity()), this);
+        getSpiceManager().execute(new GetStopsSpiceRequest(getActivity()), this);
     }
 
     @Override
@@ -191,9 +201,11 @@ public class BusMapFragment extends SupportMapFragment
     @Override
     public void onConnected(Bundle bundle) {
         Location lastLocation = mLocationClient.getLastLocation();
-        final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation
-                .getLatitude(), lastLocation.getLongitude()), 16);
-        getMap().moveCamera(cameraUpdate);
+        if (!restore) {
+            final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation
+                    .getLatitude(), lastLocation.getLongitude()), 16);
+            getMap().moveCamera(cameraUpdate);
+        }
     }
 
     @Override
@@ -229,6 +241,14 @@ public class BusMapFragment extends SupportMapFragment
         final SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(PREF_GPS, GPS_ON);
         editor.commit();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        final MenuItem item = menu.findItem(R.id.action_location);
+        assert item != null;
+        item.setChecked(GPS_ON);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Background

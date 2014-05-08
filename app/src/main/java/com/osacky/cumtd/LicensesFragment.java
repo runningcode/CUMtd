@@ -15,6 +15,7 @@ import java.io.StringWriter;
 
 @EFragment(R.layout.fragment_licenses)
 public class LicensesFragment extends DialogFragment {
+
     @ViewById(R.id.license_text)
     TextView textView;
 
