@@ -18,8 +18,9 @@
     <string name="action_licenses">Licenses</string>
     <string name="license_title">Third Party Licenses</string>
     <string name="search_hint">Search for a stop</string>
-    <string name="toggle_gps">Toggle GPS</string>
+    <string name="toggle_gps">Use GPS Location</string>
     <string name="clear_search_history">Clear Search History</string>
     <string name="stop_frag_title">Stop</string>
+    <string name="global_settings_description">Search for bus stops</string>
 
 </resources>

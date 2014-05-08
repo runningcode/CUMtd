@@ -1,11 +1,14 @@
 package com.osacky.cumtd;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -205,13 +208,26 @@ public class BusMapFragment extends SupportMapFragment
     }
 
     @OptionsItem(R.id.action_location)
-    void toggleLocation() {
+    void toggleLocation(MenuItem item) {
         SharedPreferences sharedPreferences = PreferenceManager
                 .getDefaultSharedPreferences(getActivity());
         GPS_ON = !sharedPreferences.getBoolean(PREF_GPS, true);
+        item.setChecked(GPS_ON);
         getMap().setMyLocationEnabled(GPS_ON);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(PREF_GPS, GPS_ON);
         editor.commit();
+    }
+
+    public void passIntent(Intent intent) {
+        Log.i(TAG, "datastring was " + intent.getDataString());
+//        getActivity().getContentResolver().query()
+//        if (marker != null) {
+//            marker.showInfoWindow();
+//            final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 16);
+//            getMap().moveCamera(cameraUpdate);
+//        } else {
+//            Log.i(TAG, "key not found");
+//        }
     }
 }

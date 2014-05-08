@@ -38,4 +38,9 @@ public class StopPoint implements ClusterItem {
         }
         return position;
     }
+
+    @Override
+    public String toString() {
+        return stopId;
+    }
 }

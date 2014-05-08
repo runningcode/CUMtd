@@ -1,5 +1,7 @@
 package com.osacky.cumtd.models;
 
+import com.google.android.gms.maps.model.LatLng;
+
 public class Departure {
     String stopId;
     String headsign;
@@ -72,8 +74,8 @@ public class Departure {
         return expectedMins;
     }
 
-    public CULocation getLocation() {
-        return location;
+    public LatLng getLocation() {
+        return new LatLng(location.getLat(), location.getLon());
     }
 
     @Override

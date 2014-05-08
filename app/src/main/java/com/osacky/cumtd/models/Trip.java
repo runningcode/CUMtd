@@ -8,4 +8,32 @@ public class Trip {
     String direction;
     String serviceId;
     String shapedId;
+
+    public String getTripId() {
+        return tripId;
+    }
+
+    public String getTripHeadsign() {
+        return tripHeadsign;
+    }
+
+    public String getRouteId() {
+        return routeId;
+    }
+
+    public String getBlockId() {
+        return blockId;
+    }
+
+    public String getDirection() {
+        return direction;
+    }
+
+    public String getServiceId() {
+        return serviceId;
+    }
+
+    public String getShapedId() {
+        return shapedId;
+    }
 }

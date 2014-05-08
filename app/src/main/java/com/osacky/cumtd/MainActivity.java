@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -23,6 +24,7 @@ import org.androidannotations.annotations.WindowFeature;
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
         LoadingInterface {
+    private static final String TAG = MainActivity.class.getName();
     @FragmentById(R.id.map_fragment)
     BusMapFragment mapFragment;
 //    @FragmentById(R.id.navigation_drawer)
@@ -103,20 +105,20 @@ public class MainActivity extends ActionBarActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 //        if (!mNavigationDrawerFragment.isDrawerOpen()) {
-            // Only show items in the action bar relevant to this screen
-            // if the drawer is not showing. Otherwise, let the drawer
-            // decide what to show in the action bar.
-            getMenuInflater().inflate(R.menu.main, menu);
+        // Only show items in the action bar relevant to this screen
+        // if the drawer is not showing. Otherwise, let the drawer
+        // decide what to show in the action bar.
+        getMenuInflater().inflate(R.menu.main, menu);
         getMenuInflater().inflate(R.menu.license_menu, menu);
-            MenuItem searchItem = menu.findItem(R.id.action_search);
+        MenuItem searchItem = menu.findItem(R.id.action_search);
 
-            SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
-            SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-            searchView.setQueryRefinementEnabled(true);
+        SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setQueryRefinementEnabled(true);
 
 //            restoreActionBar();
-            return true;
+        return true;
 //        }
 //        return super.onCreateOptionsMenu(menu);
     }
@@ -127,7 +129,7 @@ public class MainActivity extends ActionBarActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
-            case(R.id.action_clear_history):
+            case (R.id.action_clear_history):
                 SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                         StopSuggestionProvider.AUTHORITY, StopSuggestionProvider.MODE);
                 suggestions.clearHistory();
@@ -148,9 +150,13 @@ public class MainActivity extends ActionBarActivity
     void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
-                    StopSuggestionProvider.AUTHORITY, StopSuggestionProvider.MODE);
-            suggestions.saveRecentQuery(query, null);
+            Log.i(TAG, "query was " + query);
+//            SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+//                    StopSuggestionProvider.AUTHORITY, StopSuggestionProvider.MODE);
+//            suggestions.saveRecentQuery(query, null);
+        } else if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+            mapFragment.passIntent(intent);
+            Log.i(TAG, "data string is " + intent.getDataString() + " uri is " + intent.getData());
         }
     }
 

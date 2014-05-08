@@ -8,6 +8,10 @@
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="com.android.vending.BILLING"/>
 
     <application
         android:allowBackup="true"
@@ -49,6 +53,14 @@
         <provider
             android:authorities="com.osacky.cumtd.StopSuggestionProvider"
             android:name=".StopSuggestionProvider"/>
+
+        <provider
+            android:authorities="com.osacky.cumtd.StopsProvider"
+            android:name=".StopsProvider">
+            <path-permission
+                android:pathPrefix="/search_suggest_query"
+                android:readPermission="android.permission.GLOBAL_SEARCH"/>
+        </provider>
 
         <meta-data
             android:name="com.google.android.gms.version"
