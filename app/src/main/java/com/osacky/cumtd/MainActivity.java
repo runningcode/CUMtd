@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -24,6 +23,8 @@ import org.androidannotations.annotations.WindowFeature;
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
         LoadingInterface {
+
+    @SuppressWarnings("unused")
     private static final String TAG = MainActivity.class.getName();
     @FragmentById(R.id.map_fragment)
     BusMapFragment mapFragment;
@@ -115,7 +116,7 @@ public class MainActivity extends ActionBarActivity
         SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        searchView.setQueryRefinementEnabled(true);
+//        searchView.setQueryRefinementEnabled(true);
 
 //            restoreActionBar();
         return true;
@@ -137,6 +138,8 @@ public class MainActivity extends ActionBarActivity
             case (R.id.action_license):
                 LicensesFragment_.builder().build().show(getSupportFragmentManager(), "LICENSES_FRAG");
                 return true;
+//            case (R.id.action_search):
+//                onSearchRequested();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -150,13 +153,11 @@ public class MainActivity extends ActionBarActivity
     void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            Log.i(TAG, "query was " + query);
-//            SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
-//                    StopSuggestionProvider.AUTHORITY, StopSuggestionProvider.MODE);
-//            suggestions.saveRecentQuery(query, null);
+            SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+                    StopSuggestionProvider.AUTHORITY, StopSuggestionProvider.MODE);
+            suggestions.saveRecentQuery(query, null);
         } else if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             mapFragment.passIntent(intent);
-            Log.i(TAG, "data string is " + intent.getDataString() + " uri is " + intent.getData());
         }
     }
 

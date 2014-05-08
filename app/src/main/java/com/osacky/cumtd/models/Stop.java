@@ -1,8 +1,11 @@
 package com.osacky.cumtd.models;
 
+import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.clustering.ClusterItem;
+
 import java.util.List;
 
-public class Stop {
+public class Stop implements ClusterItem {
     String stopId;
     String stopName;
     String code;
@@ -32,5 +35,10 @@ public class Stop {
 
     public List<StopPoint> getStopPoints() {
         return stopPoints;
+    }
+
+    @Override
+    public LatLng getPosition() {
+        return getStopPoints().get(0).getPosition();
     }
 }

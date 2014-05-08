@@ -1,13 +1,13 @@
 package com.osacky.cumtd;
 
 import android.database.sqlite.SQLiteDatabase;
-import android.provider.BaseColumns;
 import android.util.Log;
 
 public class StopTable {
 
     public static final String TABLE_STOP = "stop";
-    public static final String COLUMN_ID = BaseColumns._ID;
+    public static final String ROW_ID = "rowid";
+    public static final String STOP_ID = "stopid";
     public static final String SEARCH_COL = "search";
     public static final String NAME_COL = "name";
     public static final String CODE_COL = "code";
@@ -17,7 +17,7 @@ public class StopTable {
     private static final String DATABASE_CREATE = "create virtual table "
             + TABLE_STOP
             + " using fts3 ("
-            + COLUMN_ID + " text primary key not null, "
+            + STOP_ID + " text  not null, "
             + SEARCH_COL + " text not null, "
             + NAME_COL + " text not null, "
             + CODE_COL + " text not null, "

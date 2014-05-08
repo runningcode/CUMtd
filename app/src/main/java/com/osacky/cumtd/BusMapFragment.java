@@ -1,15 +1,17 @@
 package com.osacky.cumtd;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
@@ -20,15 +22,16 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.clustering.ClusterManager;
 import com.octo.android.robospice.SpiceManager;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.PendingRequestListener;
 import com.osacky.cumtd.api.CUMTDApiService;
 import com.osacky.cumtd.api.GetStopsSpiceRequest;
+import com.osacky.cumtd.models.GetDeparturesResponse;
 import com.osacky.cumtd.models.Stop;
 import com.osacky.cumtd.models.StopList;
-import com.osacky.cumtd.models.StopPoint;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 import org.androidannotations.annotations.Background;
@@ -38,7 +41,11 @@ import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.UiThread;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.osacky.cumtd.Constants.ARG_SECTION_NUMBER;
+import static com.osacky.cumtd.Constants.CU_LAT;
 import static com.osacky.cumtd.Constants.CU_LON;
 import static com.osacky.cumtd.Constants.PREF_GPS;
 import static com.osacky.cumtd.Constants.STOPS_CHANGESET_ID;
@@ -55,9 +62,10 @@ public class BusMapFragment extends SupportMapFragment
     private static final String TAG = "BusMapFragment";
     private static boolean GPS_ON = true;
     private SpiceManager spiceManager = new SpiceManager(CUMTDApiService.class);
-    private ClusterManager<StopPoint> mClusterManager;
+    private ClusterManager<Stop> mClusterManager;
     private LocationClient mLocationClient;
     private LoadingInterface mLoadingInterface;
+    private List<Marker> busMarkers = new ArrayList<>();
 
     @FragmentArg(ARG_SECTION_NUMBER)
     int sectionNumber;
@@ -89,12 +97,16 @@ public class BusMapFragment extends SupportMapFragment
         final SystemBarTintManager tintManager = new SystemBarTintManager(getActivity());
         final SystemBarTintManager.SystemBarConfig config = tintManager.getConfig();
         final GoogleMap map = getMap();
-        final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(Constants.CU_LAT,
+        if (map == null) {
+            Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(CU_LAT,
                 CU_LON), 13);
 
         mClusterManager = new ClusterManager<>(getActivity(), map);
         final StopPointRenderer stopPointRenderer = new StopPointRenderer(getActivity().getApplicationContext(), map,
-                mClusterManager, getSpiceManager());
+                mClusterManager, getSpiceManager(), busMarkers);
         mClusterManager.setRenderer(stopPointRenderer);
         mClusterManager.setOnClusterClickListener(stopPointRenderer);
         mClusterManager.setOnClusterItemClickListener(stopPointRenderer);
@@ -160,10 +172,10 @@ public class BusMapFragment extends SupportMapFragment
 
     @Background
     void addStops(StopList stops) {
-        for (Stop stop : stops) {
-            mClusterManager.addItems(stop.getStopPoints());
+        if (mClusterManager != null) {
+            mClusterManager.addItems(stops);
+            updateCluster();
         }
-        updateCluster();
     }
 
     @UiThread
@@ -192,7 +204,7 @@ public class BusMapFragment extends SupportMapFragment
     public void onConnectionFailed(ConnectionResult connectionResult) {
         try {
             connectionResult.startResolutionForResult(getActivity(), 1);
-        } catch (IntentSender.SendIntentException e) {
+        } catch (IntentSender.SendIntentException | ActivityNotFoundException e) {
             e.printStackTrace();
         }
     }
@@ -219,15 +231,36 @@ public class BusMapFragment extends SupportMapFragment
         editor.commit();
     }
 
+    @Background
     public void passIntent(Intent intent) {
-        Log.i(TAG, "datastring was " + intent.getDataString());
-//        getActivity().getContentResolver().query()
-//        if (marker != null) {
-//            marker.showInfoWindow();
-//            final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 16);
-//            getMap().moveCamera(cameraUpdate);
-//        } else {
-//            Log.i(TAG, "key not found");
-//        }
+        assert intent != null;
+        final Cursor cursor = getActivity().getContentResolver().query(intent.getData(), null,
+                null, null, null);
+        assert cursor != null;
+        if (BuildConfig.DEBUG && cursor.getCount() != 1) {
+            throw new UnsupportedOperationException("Got " + cursor.getCount() + " columns, " +
+                    "expecting 1");
+        }
+        cursor.moveToFirst();
+        String title = cursor.getString(cursor.getColumnIndex(StopTable.NAME_COL));
+        String stopId = cursor.getString(cursor.getColumnIndex(StopTable.STOP_ID));
+        double lat = cursor.getDouble(cursor.getColumnIndex(StopTable.LAT_COL));
+        double lon = cursor.getDouble(cursor.getColumnIndex(StopTable.LON_COL));
+        cursor.close();
+        LatLng position = new LatLng(lat, lon);
+        MarkerOptions markerOptions = new MarkerOptions().title(title).position(position);
+        addMarker(markerOptions, position, stopId);
+    }
+
+    @UiThread
+    void addMarker(MarkerOptions markerOptions, LatLng position, String stopId) {
+        final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(position, 16);
+        final Marker marker = getMap().addMarker(markerOptions);
+        marker.showInfoWindow();
+        getMap().animateCamera(cameraUpdate);
+        getSpiceManager().addListenerIfPending(GetDeparturesResponse.class, stopId,
+                new GetStopResponseListener(stopId, marker, getActivity(), getMap(),
+                        getSpiceManager(), busMarkers)
+        );
     }
 }

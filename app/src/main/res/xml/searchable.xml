@@ -6,6 +6,7 @@
             android:searchSuggestAuthority="com.osacky.cumtd.StopsProvider"
             android:searchSuggestSelection="search match ?"
             android:searchSuggestIntentAction="android.intent.action.VIEW"
+            android:searchSuggestIntentData="content://com.osacky.cumtd.StopsProvider/stops"
             android:includeInGlobalSearch="true"
             android:searchSettingsDescription="@string/global_settings_description">
 </searchable>

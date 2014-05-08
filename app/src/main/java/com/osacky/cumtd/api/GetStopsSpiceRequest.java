@@ -10,18 +10,24 @@ import com.google.gson.Gson;
 import com.octo.android.robospice.persistence.DurationInMillis;
 import com.octo.android.robospice.request.CachedSpiceRequest;
 import com.octo.android.robospice.request.retrofit.RetrofitSpiceRequest;
-import com.osacky.cumtd.Constants;
-import com.osacky.cumtd.StopTable;
 import com.osacky.cumtd.StopsProvider;
 import com.osacky.cumtd.models.GetStopResponse;
 import com.osacky.cumtd.models.Stop;
 import com.osacky.cumtd.models.StopList;
-import com.osacky.cumtd.models.StopPoint;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.osacky.cumtd.Constants.STOPS_CHANGESET_ID;
+import static com.osacky.cumtd.Constants.STOPS_SAVE_ID;
+import static com.osacky.cumtd.StopTable.CODE_COL;
+import static com.osacky.cumtd.StopTable.LAT_COL;
+import static com.osacky.cumtd.StopTable.LON_COL;
+import static com.osacky.cumtd.StopTable.NAME_COL;
+import static com.osacky.cumtd.StopTable.SEARCH_COL;
+import static com.osacky.cumtd.StopTable.STOP_ID;
 
 public class GetStopsSpiceRequest extends RetrofitSpiceRequest<StopList, CUMTDApi> {
 
@@ -38,35 +44,33 @@ public class GetStopsSpiceRequest extends RetrofitSpiceRequest<StopList, CUMTDAp
 
     @Override
     public StopList loadDataFromNetwork() throws Exception {
-        final String changesetId = mSharedPreferences.getString(Constants.STOPS_CHANGESET_ID, "");
+        final String changesetId = mSharedPreferences.getString(STOPS_CHANGESET_ID, "");
         final GetStopResponse stopResponse = getService().getStops(changesetId);
         if (stopResponse.isNewChangeset()) {
             contentResolver.delete(StopsProvider.CONTENT_URI, null, null);
             final SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putString(Constants.STOPS_CHANGESET_ID, stopResponse.getChangesetId());
+            editor.putString(STOPS_CHANGESET_ID, stopResponse.getChangesetId());
             final StopList stopList = stopResponse.getStops();
-            editor.putString(Constants.STOPS_SAVE_ID, new Gson().toJson(stopList));
+            editor.putString(STOPS_SAVE_ID, new Gson().toJson(stopList));
             editor.commit();
             List<ContentValues> contentValues = new ArrayList<>();
             for (Stop stop : stopList) {
-                for (StopPoint stopPoint : stop.getStopPoints()) {
-                    ContentValues contentValue = new ContentValues();
-                    contentValue.put(StopTable.COLUMN_ID, stopPoint.getStopId());
-                    contentValue.put(StopTable.SEARCH_COL, stopPoint.getStopName() + " " +
-                            stopPoint.getCode() + " " + stopPoint.getCode().substring(3));
-                    contentValue.put(StopTable.CODE_COL, stopPoint.getCode());
-                    contentValue.put(StopTable.NAME_COL, stopPoint.getStopName());
-                    contentValue.put(StopTable.LAT_COL, stopPoint.getStopLat());
-                    contentValue.put(StopTable.LON_COL, stopPoint.getStopLon());
-                    contentValues.add(contentValue);
-                }
+                ContentValues contentValue = new ContentValues();
+                contentValue.put(STOP_ID, stop.getStopId());
+                contentValue.put(SEARCH_COL, stop.getStopName() + " " +
+                        stop.getCode() + " " + stop.getCode().substring(3));
+                contentValue.put(CODE_COL, stop.getCode());
+                contentValue.put(NAME_COL, stop.getStopName());
+                contentValue.put(LAT_COL, stop.getStopPoints().get(0).getStopLat());
+                contentValue.put(LON_COL, stop.getStopPoints().get(0).getStopLon());
+                contentValues.add(contentValue);
             }
             contentResolver.bulkInsert(StopsProvider.CONTENT_URI, contentValues.toArray(new
                     ContentValues[contentValues.size()]));
             return stopList;
         } else {
             return new Gson().fromJson(
-                    mSharedPreferences.getString(Constants.STOPS_SAVE_ID, ""),
+                    mSharedPreferences.getString(STOPS_SAVE_ID, ""),
                     StopList.class
             );
         }
