@@ -3,6 +3,7 @@ package com.osacky.cumtd;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.View;
 
 import com.octo.android.robospice.SpiceManager;
@@ -10,6 +11,8 @@ import com.osacky.cumtd.api.CUMTDApiService;
 
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
+
+import roboguice.util.temp.Ln;
 
 import static com.osacky.cumtd.Constants.ARG_SECTION_NUMBER;
 
@@ -19,6 +22,10 @@ public class BaseSpiceListFragment extends ListFragment {
 
     @FragmentArg(ARG_SECTION_NUMBER)
     int sectionNumber;
+
+    static {
+        Ln.getConfig().setLoggingLevel(Log.ERROR);
+    }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {

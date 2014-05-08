@@ -19,10 +19,8 @@ import com.readystatesoftware.systembartint.SystemBarTintManager;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.OptionsItem;
-import org.androidannotations.annotations.WindowFeature;
 
 @EActivity(R.layout.activity_main_map)
-@WindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS)
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
         LoadingInterface {
@@ -43,8 +41,8 @@ public class MainActivity extends ActionBarActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setProgressBarIndeterminateVisibility(false);
 //        mTitle = getTitle();
+        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         SystemBarTintManager systemBarTintManager = new SystemBarTintManager(this);
         systemBarTintManager.setStatusBarTintEnabled(true);
         systemBarTintManager.setStatusBarTintColor(getResources().getColor(R.color.actionBarColor));
@@ -166,11 +164,11 @@ public class MainActivity extends ActionBarActivity
 
     @Override
     public void onLoadingStarted() {
-        setProgressBarIndeterminateVisibility(true);
+        setSupportProgressBarIndeterminateVisibility(true);
     }
 
     @Override
     public void onLoadingFinished() {
-        setProgressBarIndeterminateVisibility(false);
+        setSupportProgressBarIndeterminateVisibility(false);
     }
 }

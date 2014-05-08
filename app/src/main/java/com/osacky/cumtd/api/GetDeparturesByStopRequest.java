@@ -18,6 +18,11 @@ public class GetDeparturesByStopRequest extends RetrofitSpiceRequest<GetDepartur
     }
 
     @Override
+    public int getPriority() {
+        return Thread.MAX_PRIORITY;
+    }
+
+    @Override
     public GetDeparturesResponse loadDataFromNetwork() throws Exception {
         return getService().getDeparturesByStop(mStopId, new HashMap());
     }

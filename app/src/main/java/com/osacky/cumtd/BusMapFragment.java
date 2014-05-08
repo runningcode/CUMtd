@@ -7,9 +7,11 @@ import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -47,9 +49,9 @@ import org.androidannotations.annotations.UiThread;
 import java.util.ArrayList;
 import java.util.List;
 
+import roboguice.util.temp.Ln;
+
 import static com.osacky.cumtd.Constants.ARG_SECTION_NUMBER;
-import static com.osacky.cumtd.Constants.CU_LAT;
-import static com.osacky.cumtd.Constants.CU_LON;
 import static com.osacky.cumtd.Constants.PREF_GPS;
 import static com.osacky.cumtd.Constants.STOPS_CHANGESET_ID;
 
@@ -70,6 +72,10 @@ public class BusMapFragment extends SupportMapFragment
     private LocationClient mLocationClient;
     private LoadingInterface mLoadingInterface;
     private List<Marker> busMarkers = new ArrayList<>();
+
+    static {
+        Ln.getConfig().setLoggingLevel(Log.ERROR);
+    }
 
     @FragmentArg(ARG_SECTION_NUMBER)
     int sectionNumber;
@@ -118,17 +124,18 @@ public class BusMapFragment extends SupportMapFragment
         mClusterManager.setRenderer(stopPointRenderer);
         mClusterManager.setOnClusterClickListener(stopPointRenderer);
         mClusterManager.setOnClusterItemClickListener(stopPointRenderer);
-        if (!restore) {
-            final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(CU_LAT,
-                    CU_LON), 13);
-            map.moveCamera(cameraUpdate);
-        }
+
         map.setOnCameraChangeListener(mClusterManager);
         map.setOnMarkerClickListener(mClusterManager);
         map.setInfoWindowAdapter(this);
         map.setMyLocationEnabled(GPS_ON);
-        map.setPadding(0, config.getPixelInsetTop(true), config.getPixelInsetRight(),
-                config.getPixelInsetBottom());
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            // this is a stupid hack since actionbarsize was returning zero
+            map.setPadding(0, 60, 0, 0);
+        } else {
+            map.setPadding(0, config.getPixelInsetTop(true), config.getPixelInsetRight(),
+                    config.getPixelInsetBottom());
+        }
     }
 
     @Override
