@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -232,7 +233,11 @@ public class BusMapFragment extends SupportMapFragment
 
     @Override
     public View getInfoContents(Marker marker) {
-        return MarkerInfoView_.build(getActivity()).bind(marker.getTitle(), marker.getSnippet());
+        if (!TextUtils.isEmpty(marker.getTitle())) {
+            return MarkerInfoView_.build(getActivity()).bind(marker.getTitle(), marker.getSnippet());
+        } else {
+            return null;
+        }
     }
 
     @OptionsItem(R.id.action_location)
@@ -261,10 +266,6 @@ public class BusMapFragment extends SupportMapFragment
         final Cursor cursor = getActivity().getContentResolver().query(intent.getData(), null,
                 null, null, null);
         assert cursor != null;
-        if (BuildConfig.DEBUG && cursor.getCount() != 1) {
-            throw new UnsupportedOperationException("Got " + cursor.getCount() + " columns, " +
-                    "expecting 1");
-        }
         cursor.moveToFirst();
         String title = cursor.getString(cursor.getColumnIndex(StopTable.NAME_COL));
         String stopId = cursor.getString(cursor.getColumnIndex(StopTable.STOP_ID));

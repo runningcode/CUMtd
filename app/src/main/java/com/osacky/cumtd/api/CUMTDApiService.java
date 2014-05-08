@@ -48,6 +48,6 @@ public class CUMTDApiService extends RetrofitGsonSpiceService {
                 .setConverter(createConverter())
                 .setRequestInterceptor(requestInterceptor)
                 .setEndpoint(getServerUrl())
-                .setLogLevel(RestAdapter.LogLevel.BASIC);
+                .setLogLevel(RestAdapter.LogLevel.NONE);
     }
 }

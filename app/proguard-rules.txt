@@ -15,3 +15,30 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+-dontwarn com.squareup.**
+-dontwarn org.androidannotations.api**
+-dontwarn retrofit.**
+-dontwarn com.octo.android.robospice.**
+
+-keepattributes *Annotation*
+-keepattributes SourceFile, LineNumberTable
+-keepattributes Signature
+-renamesourcefileattribute SourceFile
+
+-keep class android.support.v7.widget.SearchView { *; }
+
+-keep class com.osacky.cumtd.models.** { *; }
+
+-keepclassmembers class com.osacky.cumtd.api.** {
+  public void set*(***);
+  public *** get*();
+  public *** is*();
+}
+
+-keep class retrofit.** { *; }
+
+-keepclasseswithmembers class * {
+    @retrofit.http.* <methods>;
+}
+
