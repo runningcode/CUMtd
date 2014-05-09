@@ -24,7 +24,9 @@ public class BaseSpiceListFragment extends ListFragment {
     int sectionNumber;
 
     static {
-        Ln.getConfig().setLoggingLevel(Log.ERROR);
+        if (!BuildConfig.DEBUG) {
+            Ln.getConfig().setLoggingLevel(Log.ERROR);
+        }
     }
 
     @Override

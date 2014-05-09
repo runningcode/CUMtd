@@ -10,7 +10,6 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -23,8 +22,8 @@ import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -41,7 +40,6 @@ import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EFragment;
-import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.UiThread;
@@ -51,7 +49,6 @@ import java.util.List;
 
 import roboguice.util.temp.Ln;
 
-import static com.osacky.cumtd.Constants.ARG_SECTION_NUMBER;
 import static com.osacky.cumtd.Constants.PREF_GPS;
 import static com.osacky.cumtd.Constants.STOPS_CHANGESET_ID;
 
@@ -60,34 +57,28 @@ import static com.osacky.cumtd.Constants.STOPS_CHANGESET_ID;
 public class BusMapFragment extends SupportMapFragment
         implements PendingRequestListener<StopList>,
         GooglePlayServicesClient.ConnectionCallbacks,
-        GooglePlayServicesClient.OnConnectionFailedListener,
-        GoogleMap.InfoWindowAdapter {
+        GooglePlayServicesClient.OnConnectionFailedListener {
 
     @SuppressWarnings("unused")
-    private static final String TAG = "BusMapFragment";
+    private static final String TAG = BusMapFragment.class.getName();
     private static boolean GPS_ON = true;
-    private boolean restore = true;
     private SpiceManager spiceManager = new SpiceManager(CUMTDApiService.class);
     private ClusterManager<Stop> mClusterManager;
     private LocationClient mLocationClient;
     private LoadingInterface mLoadingInterface;
-    private List<Marker> busMarkers = new ArrayList<>();
+    private List<GroundOverlay> busMarkers = new ArrayList<>();
 
     static {
-        Ln.getConfig().setLoggingLevel(Log.ERROR);
+        if (!BuildConfig.DEBUG) {
+            Ln.getConfig().setLoggingLevel(Log.ERROR);
+        }
     }
-
-    @FragmentArg(ARG_SECTION_NUMBER)
-    int sectionNumber;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         GPS_ON = sharedPreferences.getBoolean(PREF_GPS, true);
-        if (savedInstanceState == null) {
-            restore = false;
-        }
         setRetainInstance(true);
     }
 
@@ -116,19 +107,23 @@ public class BusMapFragment extends SupportMapFragment
                     config.getPixelInsetBottom());
             return;
         }
-        getMap().clear();
-        mClusterManager = new ClusterManager<>(getActivity().getApplicationContext(), getMap());
-        final StopPointRenderer stopPointRenderer = new StopPointRenderer(getActivity()
-                .getApplicationContext(), getMap(),
-                mClusterManager, getSpiceManager(), busMarkers
-        );
-        mClusterManager.setRenderer(stopPointRenderer);
-        mClusterManager.setOnClusterClickListener(stopPointRenderer);
-        mClusterManager.setOnClusterItemClickListener(stopPointRenderer);
-        getMap().setOnCameraChangeListener(mClusterManager);
-        getMap().setOnMarkerClickListener(mClusterManager);
-        getMap().setInfoWindowAdapter(this);
-        getMap().setMyLocationEnabled(GPS_ON);
+        if (mClusterManager == null) {
+            getMap().clear();
+            mClusterManager = new ClusterManager<>(getActivity().getApplicationContext(), getMap());
+            final StopPointRenderer stopPointRenderer = new StopPointRenderer(getActivity()
+                    .getApplicationContext(), getMap(),
+                    mClusterManager, getSpiceManager(), busMarkers
+            );
+            mClusterManager.setRenderer(stopPointRenderer);
+            mClusterManager.setOnClusterClickListener(stopPointRenderer);
+            mClusterManager.setOnClusterItemClickListener(stopPointRenderer);
+//            mClusterManager.setOnClusterItemInfoWindowClickListener(stopPointRenderer);
+            getMap().setInfoWindowAdapter(stopPointRenderer);
+            getMap().setOnInfoWindowClickListener(stopPointRenderer);
+            getMap().setOnCameraChangeListener(mClusterManager);
+            getMap().setOnMarkerClickListener(mClusterManager);
+            getMap().setMyLocationEnabled(GPS_ON);
+        }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             // this is a stupid hack since actionbarsize was returning zero
             getMap().setPadding(0, 60, 0, 0);
@@ -145,14 +140,11 @@ public class BusMapFragment extends SupportMapFragment
             mLocationClient.connect();
         }
         super.onStart();
-//        ((MainActivity) getActivity()).onSectionAttached(sectionNumber);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mClusterManager.clearItems();
-        mClusterManager = null;
         mLocationClient = null;
         mLoadingInterface = null;
     }
@@ -192,10 +184,8 @@ public class BusMapFragment extends SupportMapFragment
 
     @Background
     void addStops(StopList stops) {
-        if (mClusterManager != null) {
-            mClusterManager.addItems(stops);
-            updateCluster();
-        }
+        mClusterManager.addItems(stops);
+        updateCluster();
     }
 
     @UiThread
@@ -211,41 +201,27 @@ public class BusMapFragment extends SupportMapFragment
     @Override
     public void onConnected(Bundle bundle) {
         Location lastLocation = mLocationClient.getLastLocation();
-        if (!restore) {
-            try {
-                final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation
-                        .getLatitude(), lastLocation.getLongitude()), 16);
-                getMap().moveCamera(cameraUpdate);
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @Override
-    public void onDisconnected() {
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
         try {
-            connectionResult.startResolutionForResult(getActivity(), 1);
-        } catch (IntentSender.SendIntentException | ActivityNotFoundException e) {
+            final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation
+                    .getLatitude(), lastLocation.getLongitude()), 16);
+            getMap().moveCamera(cameraUpdate);
+        } catch (NullPointerException e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public View getInfoWindow(Marker marker) {
-        return null;
+    public void onDisconnected() {
+        mLocationClient = null;
     }
 
     @Override
-    public View getInfoContents(Marker marker) {
-        if (!TextUtils.isEmpty(marker.getTitle())) {
-            return MarkerInfoView_.build(getActivity()).bind(marker.getTitle(), marker.getSnippet());
-        } else {
-            return null;
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        mLocationClient = null;
+        try {
+            connectionResult.startResolutionForResult(getActivity(), 1);
+        } catch (IntentSender.SendIntentException | ActivityNotFoundException e) {
+            e.printStackTrace();
         }
     }
 
@@ -282,14 +258,16 @@ public class BusMapFragment extends SupportMapFragment
         double lat = cursor.getDouble(cursor.getColumnIndex(StopTable.LAT_COL));
         double lon = cursor.getDouble(cursor.getColumnIndex(StopTable.LON_COL));
         cursor.close();
-        LatLng position = new LatLng(lat, lon);
-        MarkerOptions markerOptions = new MarkerOptions().title(title).position(position);
-        addMarker(markerOptions, position, stopId);
+        MarkerOptions markerOptions = new MarkerOptions().title(title).position(new LatLng(lat,
+                lon));
+        addMarker(markerOptions, lat, lon, stopId);
     }
 
     @UiThread
-    void addMarker(MarkerOptions markerOptions, LatLng position, String stopId) {
-        final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(position, 16);
+    void addMarker(MarkerOptions markerOptions, double lat, double lon, String stopId) {
+        final float zoom = getMap().getCameraPosition().zoom;
+        final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(
+                new LatLng(lat + 150.0 / Math.pow(2, zoom), lon), 16);
         final Marker marker = getMap().addMarker(markerOptions);
         marker.showInfoWindow();
         getMap().animateCamera(cameraUpdate);

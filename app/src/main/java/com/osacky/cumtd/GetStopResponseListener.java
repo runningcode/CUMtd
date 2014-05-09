@@ -6,9 +6,10 @@ import android.graphics.drawable.ColorDrawable;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.GroundOverlay;
+import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.ui.IconGenerator;
 import com.octo.android.robospice.SpiceManager;
 import com.octo.android.robospice.persistence.exception.SpiceException;
@@ -27,11 +28,11 @@ class GetStopResponseListener implements PendingRequestListener<GetDeparturesRes
     private final SpiceManager mSpiceManager;
     private final IconGenerator mIconGenerator;
     private final Resources mResources;
-    private final List<Marker> mBusMarkers;
+    private final List<GroundOverlay> mBusMarkers;
 
     public GetStopResponseListener(String stopId, Marker marker, Context context,
                                    GoogleMap map, SpiceManager spiceManager,
-                                   List<Marker> busMarkers) {
+                                   List<GroundOverlay> busMarkers) {
         mStopId = stopId;
         mMarker = marker;
         mMap = map;
@@ -53,7 +54,7 @@ class GetStopResponseListener implements PendingRequestListener<GetDeparturesRes
 
     @Override
     public void onRequestSuccess(GetDeparturesResponse getDeparturesResponse) {
-        for (Marker bus : mBusMarkers) {
+        for (GroundOverlay bus : mBusMarkers) {
             bus.remove();
         }
         mBusMarkers.clear();
@@ -90,12 +91,11 @@ class GetStopResponseListener implements PendingRequestListener<GetDeparturesRes
     }
 
     private void addIcon(String text, LatLng position) {
-        MarkerOptions markerOptions = new MarkerOptions()
-                .icon(BitmapDescriptorFactory.fromBitmap(mIconGenerator.makeIcon(text)))
-                .position(position)
-                .anchor(mIconGenerator.getAnchorU(), mIconGenerator.getAnchorV());
+        GroundOverlayOptions groundOverlay = new GroundOverlayOptions()
+                .image(BitmapDescriptorFactory.fromBitmap(mIconGenerator.makeIcon(text)))
+                .position(position, 80);
 
-        final Marker marker = mMap.addMarker(markerOptions);
+        final GroundOverlay marker = mMap.addGroundOverlay(groundOverlay);
         mBusMarkers.add(marker);
     }
 }

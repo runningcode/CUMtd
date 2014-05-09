@@ -18,7 +18,9 @@ public class BaseSpiceFragment extends Fragment {
     private SpiceManager spiceManager = new SpiceManager(CUMTDApiService.class);
 
     static {
-        Ln.getConfig().setLoggingLevel(Log.ERROR);
+        if (!BuildConfig.DEBUG) {
+            Ln.getConfig().setLoggingLevel(Log.ERROR);
+        }
     }
 
     @FragmentArg(ARG_SECTION_NUMBER)

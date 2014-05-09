@@ -41,4 +41,12 @@ public class Stop implements ClusterItem {
     public LatLng getPosition() {
         return getStopPoints().get(0).getPosition();
     }
+
+    public double getLat() {
+        return getStopPoints().get(0).getStopLat();
+    }
+
+    public double getLon() {
+        return getStopPoints().get(0).getStopLon();
+    }
 }

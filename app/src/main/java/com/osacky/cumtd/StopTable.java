@@ -13,16 +13,18 @@ public class StopTable {
     public static final String CODE_COL = "code";
     public static final String LAT_COL = "lat";
     public static final String LON_COL = "lon";
+    public static final String IS_FAV = "fav";
 
     private static final String DATABASE_CREATE = "create virtual table "
             + TABLE_STOP
             + " using fts3 ("
-            + STOP_ID + " text  not null, "
+            + STOP_ID + " text unique, "
             + SEARCH_COL + " text not null, "
             + NAME_COL + " text not null, "
             + CODE_COL + " text not null, "
             + LAT_COL + " real not null, "
-            + LON_COL + " real not null"
+            + LON_COL + " real not null, "
+            + IS_FAV + " integer default 0"
             + ");";
 
     public static void onCreate(SQLiteDatabase database) {

@@ -8,7 +8,7 @@
         android:title="@string/toggle_gps"
         android:checkable="true"
         android:orderInCategory="95"
-        app:showAsAction="never"
+        app:showAsAction="ifRoom|collapseActionView"
         />
 
 </menu>

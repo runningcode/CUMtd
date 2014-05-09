@@ -19,7 +19,8 @@ import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.ViewById;
 
 @EFragment(R.layout.fragment_search_results)
-public class SearchResultsFragment extends DialogFragment {
+public class SearchResultsFragment extends DialogFragment implements AdapterView
+        .OnItemClickListener {
 
     @SuppressWarnings("unused")
     private static final String TAG = SearchResultsFragment.class.getName();
@@ -39,7 +40,8 @@ public class SearchResultsFragment extends DialogFragment {
                 null, selection, new String[]{query},
                 null);
         if (cursor == null || cursor.getCount() == 0) {
-            Toast.makeText(getActivity(), getString(R.string.no_results), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), String.format(getString(R.string.no_results), query),
+                    Toast.LENGTH_SHORT).show();
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -72,16 +74,15 @@ public class SearchResultsFragment extends DialogFragment {
                 cursor.getCount(), cursor.getCount()));
         listView.setAdapter(new SimpleCursorAdapter(getActivity(),
                 android.R.layout.simple_list_item_2, cursor, from, to, 0));
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent i = new Intent(getActivity(), MainActivity_.class);
-                i.setAction(Intent.ACTION_VIEW);
-                i.setData(Uri.withAppendedPath(StopsProvider.CONTENT_URI, String.valueOf(id)));
-                startActivity(i);
-                dismiss();
-            }
-        });
+        listView.setOnItemClickListener(this);
     }
 
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Intent i = new Intent(getActivity(), MainActivity_.class);
+        i.setAction(Intent.ACTION_VIEW);
+        i.setData(Uri.withAppendedPath(StopsProvider.CONTENT_URI, String.valueOf(id)));
+        startActivity(i);
+        dismiss();
+    }
 }

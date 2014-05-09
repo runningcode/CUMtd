@@ -9,10 +9,11 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -25,6 +26,7 @@ import static android.content.ContentResolver.CURSOR_DIR_BASE_TYPE;
 import static android.content.ContentResolver.CURSOR_ITEM_BASE_TYPE;
 import static android.provider.BaseColumns._ID;
 import static com.osacky.cumtd.StopTable.CODE_COL;
+import static com.osacky.cumtd.StopTable.IS_FAV;
 import static com.osacky.cumtd.StopTable.LAT_COL;
 import static com.osacky.cumtd.StopTable.LON_COL;
 import static com.osacky.cumtd.StopTable.NAME_COL;
@@ -42,34 +44,44 @@ public class StopsProvider extends ContentProvider {
     private static final int SHORTCUT_REFRESH = 1;
     private static final int STOPS = 10;
     private static final int STOP_ID = 20;
+    private static final int FAV_SEARCH = 30;
 
     private static final String AUTHORITY = "com.osacky.cumtd.StopsProvider";
     private static final String BASE_PATH = "stops";
+    private static final String FAVS_PATH = "/favs";
     public static final String CONTENT_TYPE = CURSOR_DIR_BASE_TYPE + "/stops";
     public static final String CONTENT_ITEM_TYPE = CURSOR_ITEM_BASE_TYPE + "/stop";
 
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + BASE_PATH);
+    public static final Uri FAV_URI = Uri.parse("content://" + AUTHORITY + "/" + BASE_PATH + FAVS_PATH);
     public static final Uri SEARCH_URI = Uri.parse("content://" + AUTHORITY + "/" +
             SUGGEST_URI_PATH_QUERY);
 
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+
     static {
         sUriMatcher.addURI(AUTHORITY, BASE_PATH, STOPS);
         sUriMatcher.addURI(AUTHORITY, BASE_PATH + "/#", STOP_ID);
+        sUriMatcher.addURI(AUTHORITY, BASE_PATH + FAVS_PATH, FAV_SEARCH);
+        sUriMatcher.addURI(AUTHORITY, BASE_PATH + FAVS_PATH + "/#", FAV_SEARCH);
         sUriMatcher.addURI(AUTHORITY, SUGGEST_URI_PATH_QUERY, SEARCH_SUGGEST);
         sUriMatcher.addURI(AUTHORITY, SUGGEST_URI_PATH_QUERY + "/*", SEARCH_SUGGEST);
         sUriMatcher.addURI(AUTHORITY, SUGGEST_URI_PATH_SHORTCUT, SHORTCUT_REFRESH);
         sUriMatcher.addURI(AUTHORITY, SUGGEST_URI_PATH_SHORTCUT + "/*", SHORTCUT_REFRESH);
     }
 
-    private static final Map<String, String> SEARCH_PROJECTION_MAP = new HashMap<>();
-    static {
-        SEARCH_PROJECTION_MAP.put(_ID, ROW_ID + " as " + _ID);
-        SEARCH_PROJECTION_MAP.put(SUGGEST_COLUMN_TEXT_1, NAME_COL + " as " + SUGGEST_COLUMN_TEXT_1);
-        SEARCH_PROJECTION_MAP.put(SUGGEST_COLUMN_TEXT_2, CODE_COL + " as " + SUGGEST_COLUMN_TEXT_2);
-        SEARCH_PROJECTION_MAP.put(SUGGEST_COLUMN_INTENT_DATA_ID,
-                ROW_ID + " as " + SUGGEST_COLUMN_INTENT_DATA_ID);
-    }
+    private static final Map<String, String> SEARCH_PROJECTION_MAP = ImmutableMap.of(
+            _ID, ROW_ID + " as " + _ID,
+            SUGGEST_COLUMN_TEXT_1, NAME_COL + " as " + SUGGEST_COLUMN_TEXT_1,
+            SUGGEST_COLUMN_TEXT_2, CODE_COL + " as " + SUGGEST_COLUMN_TEXT_2,
+            SUGGEST_COLUMN_INTENT_DATA_ID, ROW_ID + " as " + SUGGEST_COLUMN_INTENT_DATA_ID
+    );
+
+    private static final Map<String, String> FAVS_PROJECTION_MAP = ImmutableMap.of(
+            _ID, ROW_ID + " as " + _ID,
+            NAME_COL, NAME_COL,
+            CODE_COL, CODE_COL
+    );
 
     @Override
     public boolean onCreate() {
@@ -89,6 +101,10 @@ public class StopsProvider extends ContentProvider {
                 queryBuilder.appendWhere(ROW_ID + "=" + uri.getLastPathSegment());
                 break;
             case STOPS:
+                break;
+            case FAV_SEARCH:
+                queryBuilder.appendWhere(IS_FAV + "=1");
+                queryBuilder.setProjectionMap(FAVS_PROJECTION_MAP);
                 break;
             case SEARCH_SUGGEST:
                 queryBuilder.setProjectionMap(SEARCH_PROJECTION_MAP);
@@ -212,8 +228,9 @@ public class StopsProvider extends ContentProvider {
     }
 
     private void checkColumns(String[] projection) {
-        String[] available = {ROW_ID, StopTable.STOP_ID, SEARCH_COL, NAME_COL, CODE_COL, LAT_COL,
-                LON_COL};
+        final String[] available = {ROW_ID, StopTable.STOP_ID, SEARCH_COL, NAME_COL, CODE_COL,
+                LAT_COL,
+                LON_COL, IS_FAV};
         if (projection != null) {
             HashSet<String> requestedColumns = new HashSet<>(Arrays.asList(projection));
             HashSet<String> availableColumns = new HashSet<>(Arrays.asList(available));

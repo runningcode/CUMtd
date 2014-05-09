@@ -3,14 +3,17 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="wrap_content">
+              android:layout_height="wrap_content"
+    >
 
     <TextView
         android:id="@+id/stop_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?textAppearanceLargePopupMenu"
+        android:gravity="center"
+        android:textColor="@android:color/primary_text_light"
         android:textStyle="bold"
+        android:drawableRight="@android:drawable/star_off"
         />
 
     <FrameLayout
@@ -22,7 +25,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            style="?android:attr/progressBarStyleSmall"/>
+            style="?android:attr/progressBarStyle"/>
 
         <TextView
             android:id="@+id/departures"
@@ -31,5 +34,12 @@
             android:layout_height="wrap_content"/>
     </FrameLayout>
 
+    <TextView
+        android:id="@+id/timestamp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:textColor="@android:color/secondary_text_dark"
+        android:textSize="12sp"/>
 
 </LinearLayout>

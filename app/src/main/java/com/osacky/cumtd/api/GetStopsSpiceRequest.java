@@ -40,11 +40,6 @@ public class GetStopsSpiceRequest extends RetrofitSpiceRequest<StopList, CUMTDAp
     }
 
     @Override
-    public int getPriority() {
-        return Thread.NORM_PRIORITY;
-    }
-
-    @Override
     public StopList loadDataFromNetwork() throws Exception {
         final String changesetId = mSharedPreferences.getString(STOPS_CHANGESET_ID, "");
         final GetStopResponse stopResponse = getService().getStops(changesetId);
