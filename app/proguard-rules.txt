@@ -20,6 +20,7 @@
 -dontwarn org.androidannotations.api**
 -dontwarn retrofit.**
 -dontwarn com.octo.android.robospice.**
+-dontwarn com.google.common.**
 
 -keepattributes *Annotation*
 -keepattributes SourceFile, LineNumberTable

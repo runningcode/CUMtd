@@ -267,7 +267,7 @@ public class BusMapFragment extends SupportMapFragment
     void addMarker(MarkerOptions markerOptions, double lat, double lon, String stopId) {
         final float zoom = getMap().getCameraPosition().zoom;
         final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(
-                new LatLng(lat + 150.0 / Math.pow(2, zoom), lon), 16);
+                new LatLng(lat + 90.0 / Math.pow(2, zoom), lon), 16);
         final Marker marker = getMap().addMarker(markerOptions);
         marker.showInfoWindow();
         getMap().animateCamera(cameraUpdate);

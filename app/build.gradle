@@ -54,7 +54,7 @@ dependencies {
     compile "com.octo.android.robospice:robospice-retrofit:1.4.12"
     compile 'com.readystatesoftware.systembartint:systembartint:1.0.3'
     compile 'com.squareup.retrofit:retrofit:1.5.0'
-    compile group: 'com.google.guava', name: 'guava', version: '12.0'
+    compile group: 'com.google.guava', name: 'guava', version: '17.0'
     compile project(":library")
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }

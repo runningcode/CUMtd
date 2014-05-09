@@ -92,6 +92,6 @@ public class StopPointRenderer extends DefaultClusterRenderer<Stop>
         ContentValues contentValues = new ContentValues(1);
         contentValues.put(StopTable.IS_FAV, 1);
         mContext.getContentResolver().update(StopsProvider.CONTENT_URI, contentValues,
-                null, null);
+                StopTable.STOP_ID + "=" + stop.getStopId(), null);
     }
 }

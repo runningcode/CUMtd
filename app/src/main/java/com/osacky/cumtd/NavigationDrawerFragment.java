@@ -35,8 +35,8 @@ import org.androidannotations.annotations.EFragment;
  * design guidelines</a> for a complete explanation of the behaviors implemented here.
  */
 @EFragment
-public class NavigationDrawerFragment extends ListFragment implements LoaderManager
-        .LoaderCallbacks<Cursor>, AdapterView.OnItemClickListener {
+public class NavigationDrawerFragment extends ListFragment
+        implements LoaderManager.LoaderCallbacks<Cursor>, AdapterView.OnItemClickListener {
 
     /**
      * Remember the position of the selected item.
@@ -182,7 +182,7 @@ public class NavigationDrawerFragment extends ListFragment implements LoaderMana
         view.setBackgroundResource(R.color.actionBarColor);
         SystemBarTintManager systemBarTintManager = new SystemBarTintManager(getActivity());
         SystemBarTintManager.SystemBarConfig config = systemBarTintManager.getConfig();
-        getListView().setPadding(0, config.getPixelInsetTop(true), config.getPixelInsetRight(),
+        getListView().setPadding(0, config.getPixelInsetTop(true), 0,
                 config.getPixelInsetBottom());
         getListView().setClipToPadding(false);
         getListView().setOnItemClickListener(this);
