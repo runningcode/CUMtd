@@ -40,6 +40,7 @@
         android:layout_height="wrap_content"
         android:gravity="end"
         android:textColor="@android:color/secondary_text_dark"
-        android:textSize="12sp"/>
+        android:textSize="12sp"
+        android:visibility="gone"/>
 
 </LinearLayout>

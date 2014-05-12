@@ -51,6 +51,7 @@ import roboguice.util.temp.Ln;
 
 import static com.osacky.cumtd.Constants.PREF_GPS;
 import static com.osacky.cumtd.Constants.STOPS_CHANGESET_ID;
+import static com.osacky.cumtd.Constants.ZOOM_OFFSET_LAT;
 
 @EFragment
 @OptionsMenu(R.menu.map)
@@ -61,7 +62,7 @@ public class BusMapFragment extends SupportMapFragment
 
     @SuppressWarnings("unused")
     private static final String TAG = BusMapFragment.class.getName();
-    private static boolean GPS_ON = true;
+    private boolean gpsOn = true;
     private SpiceManager spiceManager = new SpiceManager(CUMTDApiService.class);
     private ClusterManager<Stop> mClusterManager;
     private LocationClient mLocationClient;
@@ -78,7 +79,7 @@ public class BusMapFragment extends SupportMapFragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        GPS_ON = sharedPreferences.getBoolean(PREF_GPS, true);
+        gpsOn = sharedPreferences.getBoolean(PREF_GPS, true);
         setRetainInstance(true);
     }
 
@@ -117,12 +118,11 @@ public class BusMapFragment extends SupportMapFragment
             mClusterManager.setRenderer(stopPointRenderer);
             mClusterManager.setOnClusterClickListener(stopPointRenderer);
             mClusterManager.setOnClusterItemClickListener(stopPointRenderer);
-//            mClusterManager.setOnClusterItemInfoWindowClickListener(stopPointRenderer);
             getMap().setInfoWindowAdapter(stopPointRenderer);
             getMap().setOnInfoWindowClickListener(stopPointRenderer);
             getMap().setOnCameraChangeListener(mClusterManager);
             getMap().setOnMarkerClickListener(mClusterManager);
-            getMap().setMyLocationEnabled(GPS_ON);
+            getMap().setMyLocationEnabled(gpsOn);
         }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             // this is a stupid hack since actionbarsize was returning zero
@@ -229,11 +229,11 @@ public class BusMapFragment extends SupportMapFragment
     void toggleLocation(MenuItem item) {
         SharedPreferences sharedPreferences = PreferenceManager
                 .getDefaultSharedPreferences(getActivity());
-        GPS_ON = !sharedPreferences.getBoolean(PREF_GPS, true);
-        item.setChecked(GPS_ON);
-        getMap().setMyLocationEnabled(GPS_ON);
+        gpsOn = !sharedPreferences.getBoolean(PREF_GPS, true);
+        item.setChecked(gpsOn);
+        getMap().setMyLocationEnabled(gpsOn);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(PREF_GPS, GPS_ON);
+        editor.putBoolean(PREF_GPS, gpsOn);
         editor.commit();
     }
 
@@ -241,7 +241,7 @@ public class BusMapFragment extends SupportMapFragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         final MenuItem item = menu.findItem(R.id.action_location);
         assert item != null;
-        item.setChecked(GPS_ON);
+        item.setChecked(gpsOn);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -265,15 +265,13 @@ public class BusMapFragment extends SupportMapFragment
 
     @UiThread
     void addMarker(MarkerOptions markerOptions, double lat, double lon, String stopId) {
-        final float zoom = getMap().getCameraPosition().zoom;
         final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(
-                new LatLng(lat + 90.0 / Math.pow(2, zoom), lon), 16);
+                new LatLng(lat + ZOOM_OFFSET_LAT, lon), 16);
         final Marker marker = getMap().addMarker(markerOptions);
         marker.showInfoWindow();
         getMap().animateCamera(cameraUpdate);
-        getSpiceManager().addListenerIfPending(GetDeparturesResponse.class, stopId,
-                new GetStopResponseListener(stopId, marker, getActivity(), getMap(),
-                        getSpiceManager(), busMarkers)
-        );
+        GetStopResponseListener listener = GetStopResponseListener_.getInstance_(getActivity())
+                .bind(stopId, marker, getMap(), getSpiceManager(), busMarkers);
+        getSpiceManager().addListenerIfPending(GetDeparturesResponse.class, stopId, listener);
     }
 }

@@ -49,4 +49,14 @@ public class Stop implements ClusterItem {
     public double getLon() {
         return getStopPoints().get(0).getStopLon();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Stop && stopId.equals(((Stop) o).getStopId());
+    }
+
+    @Override
+    public int hashCode() {
+        return stopId.hashCode();
+    }
 }

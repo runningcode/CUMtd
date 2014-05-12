@@ -2,6 +2,7 @@ package com.osacky.cumtd;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.view.View;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -26,13 +27,12 @@ public class StopPointRenderer extends DefaultClusterRenderer<Stop>
         GoogleMap.InfoWindowAdapter,
         GoogleMap.OnInfoWindowClickListener {
 
-    private static final int MIN_CLUSTER_SIZE = 6;
     @SuppressWarnings("unused")
     private static final String TAG = StopPointRenderer.class.getName();
+    private static final int MIN_CLUSTER_SIZE = 4;
     private SpiceManager mSpiceManager;
     private final List<GroundOverlay> mBusMarkers;
     private final Context mContext;
-
 
     public StopPointRenderer(Context context, GoogleMap map, ClusterManager<Stop>
             clusterManager, SpiceManager spiceManager, List<GroundOverlay> busMarkers) {
@@ -63,15 +63,13 @@ public class StopPointRenderer extends DefaultClusterRenderer<Stop>
 
     @Override
     public boolean onClusterItemClick(Stop item) {
-        final float zoom = getMap().getCameraPosition().zoom;
-        LatLng position = new LatLng(item.getLat() + 150.0 / Math.pow(2, zoom), item.getLon());
+        LatLng position = new LatLng(item.getLat() + Constants.ZOOM_OFFSET_LAT, item.getLon());
         final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(position);
         getMap().animateCamera(cameraUpdate);
         final Marker marker = getMarker(item);
-        mSpiceManager.addListenerIfPending(GetDeparturesResponse.class, item.getStopId(),
-                new GetStopResponseListener(item.getStopId(), marker, mContext, getMap(),
-                        mSpiceManager, mBusMarkers)
-        );
+        GetStopResponseListener listener = GetStopResponseListener_.getInstance_(mContext)
+                .bind(item.getStopId(), getMarker(item), getMap(), mSpiceManager, mBusMarkers);
+        mSpiceManager.addListenerIfPending(GetDeparturesResponse.class, item.getStopId(), listener);
         marker.showInfoWindow();
         return true;
     }
@@ -83,15 +81,29 @@ public class StopPointRenderer extends DefaultClusterRenderer<Stop>
 
     @Override
     public View getInfoContents(Marker marker) {
-        return MarkerInfoView_.build(mContext).bind(marker, false);
+        boolean isFav = isMarkerFav(marker);
+        return MarkerInfoView_.build(mContext).bind(marker, isFav);
+    }
+
+    private boolean isMarkerFav(Marker marker) {
+        final Cursor cursor = mContext.getContentResolver().query(StopsProvider.CONTENT_URI, null,
+                StopTable.NAME_COL + "=?",
+                new String[]{marker.getTitle()},
+                null);
+        boolean isFav;
+        cursor.moveToFirst();
+        isFav = cursor.getInt(cursor.getColumnIndex(StopTable.IS_FAV)) == 1;
+        cursor.close();
+        return isFav;
     }
 
     @Override
     public void onInfoWindowClick(Marker marker) {
-        Stop stop = getClusterItem(marker);
+        boolean isFav = isMarkerFav(marker);
         ContentValues contentValues = new ContentValues(1);
-        contentValues.put(StopTable.IS_FAV, 1);
+        contentValues.put(StopTable.IS_FAV, !isFav);
         mContext.getContentResolver().update(StopsProvider.CONTENT_URI, contentValues,
-                StopTable.STOP_ID + "=" + stop.getStopId(), null);
+                StopTable.NAME_COL + "=?", new String[]{marker.getTitle()});
+        marker.showInfoWindow();
     }
 }

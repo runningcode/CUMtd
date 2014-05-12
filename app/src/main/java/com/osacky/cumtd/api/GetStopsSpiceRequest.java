@@ -42,7 +42,15 @@ public class GetStopsSpiceRequest extends RetrofitSpiceRequest<StopList, CUMTDAp
     @Override
     public StopList loadDataFromNetwork() throws Exception {
         final String changesetId = mSharedPreferences.getString(STOPS_CHANGESET_ID, "");
-        final GetStopResponse stopResponse = getService().getStops(changesetId);
+        GetStopResponse stopResponse;
+        try {
+            stopResponse = getService().getStops(changesetId);
+        } catch (Exception e) {
+            // if no internet connection, return cached data
+            return new Gson().fromJson(
+                    mSharedPreferences.getString(STOPS_SAVE_ID, ""),
+                    StopList.class);
+        }
         if (stopResponse.isNewChangeset()) {
             contentResolver.delete(StopsProvider.CONTENT_URI, null, null);
             final SharedPreferences.Editor editor = mSharedPreferences.edit();

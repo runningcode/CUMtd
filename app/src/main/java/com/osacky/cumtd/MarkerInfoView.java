@@ -44,8 +44,6 @@ public class MarkerInfoView extends LinearLayout {
     public View bind(Marker marker, boolean isFav) {
         setStar(isFav);
         stopName.setText(marker.getTitle());
-        progressBar.setIndeterminate(true);
-        progressBar.setProgress(1);
         if (!TextUtils.isEmpty(marker.getSnippet())) {
             progressBar.setVisibility(View.GONE);
             if (!marker.getSnippet().equals(departures.getText())) {
@@ -61,9 +59,10 @@ public class MarkerInfoView extends LinearLayout {
     void setStar(boolean isFav) {
         assert getResources() != null;
         if (isFav) {
-            stopName.setCompoundDrawablesWithIntrinsicBounds(0, 0, android.R.drawable.star_on, 0);
+            stopName.setCompoundDrawablesWithIntrinsicBounds(0, 0, android.R.drawable.star_big_on,
+                    0);
         } else {
-            stopName.setCompoundDrawablesWithIntrinsicBounds(0, 0, android.R.drawable.star_off, 0);
+            stopName.setCompoundDrawablesWithIntrinsicBounds(0, 0, android.R.drawable.star_big_off, 0);
         }
     }
 }

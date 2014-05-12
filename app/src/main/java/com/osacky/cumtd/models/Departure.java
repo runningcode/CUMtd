@@ -18,7 +18,7 @@ public class Departure {
     int expectedMins;
     CULocation location;
 
-    class DestOrig {
+    private static class DestOrig {
         public String stopId;
     }
 

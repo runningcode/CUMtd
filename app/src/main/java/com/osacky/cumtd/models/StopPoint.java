@@ -41,6 +41,16 @@ public class StopPoint implements ClusterItem {
 
     @Override
     public String toString() {
-        return stopId;
+        return stopId + " " + stopName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof StopPoint && stopId.equals(((StopPoint) o).getStopId());
+    }
+
+    @Override
+    public int hashCode() {
+        return stopId.hashCode();
     }
 }

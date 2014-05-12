@@ -1,7 +1,6 @@
 package com.osacky.cumtd;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.drawable.ColorDrawable;
 
 import com.google.android.gms.maps.GoogleMap;
@@ -18,33 +17,41 @@ import com.osacky.cumtd.api.GetDeparturesByStopRequest;
 import com.osacky.cumtd.models.Departure;
 import com.osacky.cumtd.models.GetDeparturesResponse;
 
+import org.androidannotations.annotations.Background;
+import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.RootContext;
+import org.androidannotations.annotations.UiThread;
+
 import java.util.List;
 
+@EBean
 class GetStopResponseListener implements PendingRequestListener<GetDeparturesResponse> {
 
-    private final String mStopId;
-    private final Marker mMarker;
-    private final GoogleMap mMap;
-    private final SpiceManager mSpiceManager;
-    private final IconGenerator mIconGenerator;
-    private final Resources mResources;
-    private final List<GroundOverlay> mBusMarkers;
+    @RootContext
+    Context mContext;
 
-    public GetStopResponseListener(String stopId, Marker marker, Context context,
+    String mStopId;
+    Marker mMarker;
+    GoogleMap mMap;
+    SpiceManager mSpiceManager;
+    IconGenerator mIconGenerator;
+    List<GroundOverlay> mBusMarkers;
+
+    public GetStopResponseListener bind(String stopId, Marker marker,
                                    GoogleMap map, SpiceManager spiceManager,
                                    List<GroundOverlay> busMarkers) {
         mStopId = stopId;
         mMarker = marker;
         mMap = map;
         mSpiceManager = spiceManager;
-        mIconGenerator = new IconGenerator(context);
-        mResources = context.getResources();
+        mIconGenerator = new IconGenerator(mContext);
         mBusMarkers = busMarkers;
+        return this;
     }
 
     @Override
     public void onRequestNotFound() {
-        mSpiceManager.execute(GetDeparturesByStopRequest.getCachedSpiceRequest(mStopId), this);
+        mSpiceManager.execute(new GetDeparturesByStopRequest(mStopId), this);
     }
 
     @Override
@@ -57,6 +64,11 @@ class GetStopResponseListener implements PendingRequestListener<GetDeparturesRes
         for (GroundOverlay bus : mBusMarkers) {
             bus.remove();
         }
+        processResponse(getDeparturesResponse);
+    }
+
+    @Background
+    void processResponse(GetDeparturesResponse getDeparturesResponse) {
         mBusMarkers.clear();
         final List<Departure> departures = getDeparturesResponse.getDepartures();
         StringBuilder snippet = new StringBuilder();
@@ -65,10 +77,10 @@ class GetStopResponseListener implements PendingRequestListener<GetDeparturesRes
             for (Departure departure : departures) {
                 snippet.append(newline);
                 if (departure.getExpectedMins() == 0) {
-                    snippet.append(String.format(mResources.getString(R.string.arriving_now),
+                    snippet.append(String.format(mContext.getString(R.string.arriving_now),
                             departure.getHeadsign()));
                 } else {
-                    snippet.append(mResources.getQuantityString(
+                    snippet.append(mContext.getResources().getQuantityString(
                             R.plurals.bus_arrival_time,
                             departure.getExpectedMins(),
                             departure.getHeadsign(),
@@ -82,15 +94,21 @@ class GetStopResponseListener implements PendingRequestListener<GetDeparturesRes
                 addIcon(departure.getHeadsign(), departure.getLocation());
             }
         } else {
-            snippet.append(mResources.getString(R.string.no_departures));
+            snippet.append(mContext.getString(R.string.no_departures));
         }
-        mMarker.setSnippet(snippet.toString());
+        updateSnippet(snippet.toString());
+    }
+
+    @UiThread
+    protected void updateSnippet(String snippet) {
+        mMarker.setSnippet(snippet);
         if (mMarker.isInfoWindowShown()) {
             mMarker.showInfoWindow();
         }
     }
 
-    private void addIcon(String text, LatLng position) {
+    @UiThread
+    protected void addIcon(String text, LatLng position) {
         GroundOverlayOptions groundOverlay = new GroundOverlayOptions()
                 .image(BitmapDescriptorFactory.fromBitmap(mIconGenerator.makeIcon(text)))
                 .position(position, 80);

@@ -36,4 +36,14 @@ public class Trip {
     public String getShapedId() {
         return shapedId;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Trip && tripId.equals(((Trip) o).tripId);
+    }
+
+    @Override
+    public int hashCode() {
+        return tripId.hashCode();
+    }
 }
