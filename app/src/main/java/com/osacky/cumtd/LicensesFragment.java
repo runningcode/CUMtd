@@ -1,28 +1,36 @@
 package com.osacky.cumtd;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.view.View;
 import android.widget.TextView;
 
-import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EFragment;
-import org.androidannotations.annotations.ViewById;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 
-@EFragment(R.layout.fragment_licenses)
+@EFragment
 public class LicensesFragment extends DialogFragment {
 
-    @ViewById(R.id.license_text)
-    TextView textView;
+    private TextView textView;
 
-    @AfterViews
-    void setUp() {
-        getDialog().setTitle(getString(R.string.license_title));
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        final View root = getActivity().getLayoutInflater().inflate(R.layout.fragment_licenses, null);
+        assert root != null;
+        textView = (TextView) root.findViewById(R.id.license_text);
         fetchLicense();
+        return new AlertDialog.Builder(getActivity())
+                .setTitle(R.string.license_title)
+                .setNegativeButton(R.string.close, null)
+                .setView(root)
+                .create();
     }
 
     @Background

@@ -227,7 +227,7 @@ public class NavigationDrawerFragment extends ListFragment
         }
         switch (item.getItemId()) {
             case R.id.action_about:
-                AboutFragment_.builder().build().show(getActivity().getSupportFragmentManager(),
+                new AboutFragment().show(getFragmentManager(),
                         "ABOUT_FRAG");
                 return true;
             case R.id.action_clear_history:

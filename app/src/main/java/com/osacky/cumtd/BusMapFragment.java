@@ -62,6 +62,8 @@ public class BusMapFragment extends SupportMapFragment
 
     @SuppressWarnings("unused")
     private static final String TAG = BusMapFragment.class.getName();
+    private static final String[] QUERY_PROJECTION = new String[]{StopTable.NAME_COL,
+            StopTable.STOP_ID, StopTable.LAT_COL, StopTable.LON_COL};
     private boolean gpsOn = true;
     private SpiceManager spiceManager = new SpiceManager(CUMTDApiService.class);
     private ClusterManager<Stop> mClusterManager;
@@ -86,9 +88,6 @@ public class BusMapFragment extends SupportMapFragment
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        final String cacheKey = sharedPreferences.getString(STOPS_CHANGESET_ID, "");
-        getSpiceManager().addListenerIfPending(StopList.class, cacheKey, this);
         mLocationClient = new LocationClient(getActivity(), this, this);
         try {
             mLoadingInterface = (LoadingInterface) getActivity();
@@ -108,7 +107,7 @@ public class BusMapFragment extends SupportMapFragment
                     config.getPixelInsetBottom());
             return;
         }
-        if (mClusterManager == null) {
+        if (savedInstanceState == null) {
             getMap().clear();
             mClusterManager = new ClusterManager<>(getActivity().getApplicationContext(), getMap());
             final StopPointRenderer stopPointRenderer = new StopPointRenderer(getActivity()
@@ -123,6 +122,9 @@ public class BusMapFragment extends SupportMapFragment
             getMap().setOnCameraChangeListener(mClusterManager);
             getMap().setOnMarkerClickListener(mClusterManager);
             getMap().setMyLocationEnabled(gpsOn);
+            final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            final String cacheKey = sharedPreferences.getString(STOPS_CHANGESET_ID, "");
+            getSpiceManager().addListenerIfPending(StopList.class, cacheKey, this);
         }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             // this is a stupid hack since actionbarsize was returning zero
@@ -249,7 +251,8 @@ public class BusMapFragment extends SupportMapFragment
     public void passIntent(Intent intent) {
         assert intent != null;
         assert intent.getData() != null;
-        final Cursor cursor = getActivity().getContentResolver().query(intent.getData(), null,
+        final Cursor cursor = getActivity().getContentResolver().query(intent.getData(),
+                QUERY_PROJECTION,
                 null, null, null);
         assert cursor != null;
         cursor.moveToFirst();

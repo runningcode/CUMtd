@@ -29,6 +29,7 @@ public class StopPointRenderer extends DefaultClusterRenderer<Stop>
 
     @SuppressWarnings("unused")
     private static final String TAG = StopPointRenderer.class.getName();
+    private static final String[] IS_FAV_PROJECTION = new String[]{StopTable.IS_FAV};
     private static final int MIN_CLUSTER_SIZE = 4;
     private SpiceManager mSpiceManager;
     private final List<GroundOverlay> mBusMarkers;
@@ -86,11 +87,13 @@ public class StopPointRenderer extends DefaultClusterRenderer<Stop>
     }
 
     private boolean isMarkerFav(Marker marker) {
-        final Cursor cursor = mContext.getContentResolver().query(StopsProvider.CONTENT_URI, null,
+        final Cursor cursor = mContext.getContentResolver().query(StopsProvider.CONTENT_URI,
+                IS_FAV_PROJECTION,
                 StopTable.NAME_COL + "=?",
                 new String[]{marker.getTitle()},
                 null);
         boolean isFav;
+        assert cursor != null;
         cursor.moveToFirst();
         isFav = cursor.getInt(cursor.getColumnIndex(StopTable.IS_FAV)) == 1;
         cursor.close();
