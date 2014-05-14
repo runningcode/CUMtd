@@ -36,8 +36,8 @@ import com.google.maps.android.clustering.ClusterItem;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.geometry.Point;
 import com.google.maps.android.projection.SphericalMercatorProjection;
-import com.google.maps.android.ui.SquareTextView;
 import com.google.maps.android.ui.IconGenerator;
+import com.google.maps.android.ui.SquareTextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,6 +56,7 @@ import static com.google.maps.android.clustering.algo.NonHierarchicalDistanceBas
 /**
  * The default view for a ClusterManager. Markers are animated in and out of clusters.
  */
+@SuppressWarnings("Convert2Diamond")
 public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRenderer<T> {
     private static final boolean SHOULD_ANIMATE = Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB;
     private final GoogleMap mMap;
@@ -95,7 +96,6 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
      * Lookup between markers and the associated cluster.
      */
     private Map<Marker, Cluster<T>> mMarkerToCluster = new HashMap<Marker, Cluster<T>>();
-    private Map<Cluster<T>, Marker> mClusterToMarker = new HashMap<Cluster<T>, Marker>();
 
     /**
      * The target zoom level for the current set of clusters.
@@ -299,6 +299,7 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
      * When zooming in, markers are animated out from the nearest existing cluster. When zooming
      * out, existing clusters are animated to the nearest new cluster.
      */
+    @SuppressWarnings("Convert2Diamond")
     private class RenderTask implements Runnable {
         final Set<? extends Cluster<T>> clusters;
         private Runnable mCallback;
@@ -475,6 +476,7 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
      * animating a markerWithPosition) is performed while trying not to block the rest of the app's
      * UI.
      */
+    @SuppressWarnings("Convert2Diamond")
     @SuppressLint("HandlerLeak")
     private class MarkerModifier extends Handler implements MessageQueue.IdleHandler {
         private static final int BLANK = 0;
@@ -611,8 +613,6 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
         }
 
         private void removeMarker(Marker m) {
-            Cluster<T> cluster = mMarkerToCluster.get(m);
-            mClusterToMarker.remove(cluster);
             mMarkerCache.remove(m);
             mMarkerToCluster.remove(m);
             mClusterManager.getMarkerManager().remove(m);
@@ -661,6 +661,7 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
     /**
      * A cache of markers representing individual ClusterItems.
      */
+    @SuppressWarnings("Convert2Diamond")
     private static class MarkerCache<T> {
         private Map<T, Marker> mCache = new HashMap<T, Marker>();
         private Map<Marker, T> mCacheReverse = new HashMap<Marker, T>();
@@ -718,18 +719,20 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
      */
     protected void onClusterItemRendered(T clusterItem, Marker marker) {
     }
-    
+
     /**
      * Get the marker from a ClusterItem
+     *
      * @param clusterItem ClusterItem which you will obtain its marker
      * @return a marker from a ClusterItem or null if it does not exists
      */
-    protected Marker getMarker(T  clusterItem) {
+    protected Marker getMarker(T clusterItem) {
         return mMarkerCache.get(clusterItem);
     }
 
     /**
      * Get the ClusterItem from a marker
+     *
      * @param marker which you will obtain its ClusterItem
      * @return a ClusterItem from a marker or null if it does not exists
      */
@@ -738,16 +741,8 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
     }
 
     /**
-     * Get the marker from a Cluster
-     * @param cluster which you will obtain its marker
-     * @return a marker from a cluster or null if it does not exists
-     */
-    protected Marker getMarker(Cluster<T>  cluster) {
-        return mClusterToMarker.get(cluster);
-    }
-
-    /**
      * Get the Cluster from a marker
+     *
      * @param marker which you will obtain its Cluster
      * @return a Cluster from a marker or null if it does not exists
      */
@@ -811,7 +806,6 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
 
             Marker marker = mClusterManager.getClusterMarkerCollection().addMarker(markerOptions);
             mMarkerToCluster.put(marker, cluster);
-            mClusterToMarker.put(cluster, marker);
             MarkerWithPosition markerWithPosition = new MarkerWithPosition(marker);
             if (animateFrom != null) {
                 markerModifier.animate(markerWithPosition, animateFrom, cluster.getPosition());
@@ -836,10 +830,7 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
 
         @Override
         public boolean equals(Object other) {
-            if (other instanceof MarkerWithPosition) {
-                return marker.equals(((MarkerWithPosition) other).marker);
-            }
-            return false;
+            return other instanceof MarkerWithPosition && marker.equals(((MarkerWithPosition) other).marker);
         }
 
         @Override
@@ -881,8 +872,6 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
         @Override
         public void onAnimationEnd(Animator animation) {
             if (mRemoveOnComplete) {
-                Cluster<T> cluster = mMarkerToCluster.get(marker);
-                mClusterToMarker.remove(cluster);
                 mMarkerCache.remove(marker);
                 mMarkerToCluster.remove(marker);
                 mMarkerManager.remove(marker);

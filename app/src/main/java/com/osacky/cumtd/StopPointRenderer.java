@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.view.View;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -18,6 +20,8 @@ import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.octo.android.robospice.SpiceManager;
 import com.osacky.cumtd.models.GetDeparturesResponse;
 import com.osacky.cumtd.models.Stop;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -34,13 +38,16 @@ public class StopPointRenderer extends DefaultClusterRenderer<Stop>
     private SpiceManager mSpiceManager;
     private final List<GroundOverlay> mBusMarkers;
     private final Context mContext;
+    private Tracker t;
 
-    public StopPointRenderer(Context context, GoogleMap map, ClusterManager<Stop>
+    public StopPointRenderer(@NotNull Context context, GoogleMap map, ClusterManager<Stop>
             clusterManager, SpiceManager spiceManager, List<GroundOverlay> busMarkers) {
         super(context, map, clusterManager);
         mSpiceManager = spiceManager;
         mContext = context;
         mBusMarkers = busMarkers;
+        CUMtdApplication app = (CUMtdApplication) context.getApplicationContext();
+        if (app != null) t = app.getTracker();
     }
 
     @Override
@@ -64,10 +71,18 @@ public class StopPointRenderer extends DefaultClusterRenderer<Stop>
 
     @Override
     public boolean onClusterItemClick(Stop item) {
-        LatLng position = new LatLng(item.getLat() + Constants.ZOOM_OFFSET_LAT, item.getLon());
+        final LatLng position = new LatLng(item.getLat() + Constants.ZOOM_OFFSET_LAT,
+                item.getLon());
         final CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(position);
         getMap().animateCamera(cameraUpdate);
         final Marker marker = getMarker(item);
+        if (t != null) {
+            t.send(new HitBuilders.EventBuilder()
+                    .setCategory(Constants.STOP_EVENT)
+                    .setAction(item.getStopId())
+                    .setLabel(Constants.STOP_CLICKED)
+                    .build());
+        }
         GetStopResponseListener listener = GetStopResponseListener_.getInstance_(mContext)
                 .bind(item.getStopId(), getMarker(item), getMap(), mSpiceManager, mBusMarkers);
         mSpiceManager.addListenerIfPending(GetDeparturesResponse.class, item.getStopId(), listener);

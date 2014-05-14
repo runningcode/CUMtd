@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 
+import com.google.android.gms.analytics.GoogleAnalytics;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 import org.androidannotations.annotations.AfterViews;
@@ -80,6 +81,12 @@ public class MainActivity extends ActionBarActivity
         SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
+        // fix a bug on android 4.0
+        if (mNavigationDrawerFragment == null) {
+            mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.navigation_drawer);
+        }
         if (!mNavigationDrawerFragment.isDrawerOpen()) {
             restoreActionBar();
         }
@@ -105,6 +112,18 @@ public class MainActivity extends ActionBarActivity
                 mapFragment.passIntent(intent);
             }
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        GoogleAnalytics.getInstance(this).reportActivityStart(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        GoogleAnalytics.getInstance(this).reportActivityStop(this);
     }
 
     @Override

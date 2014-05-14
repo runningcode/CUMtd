@@ -25,6 +25,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 import org.androidannotations.annotations.EFragment;
@@ -129,6 +131,9 @@ public class NavigationDrawerFragment extends ListFragment
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
+                Tracker t = ((CUMtdApplication) getActivity().getApplication()).getTracker();
+                t.setScreenName(((Object) NavigationDrawerFragment.this).getClass().getSimpleName());
+                t.send(new HitBuilders.AppViewBuilder().build());
                 if (!isAdded()) {
                     return;
                 }
@@ -290,6 +295,7 @@ public class NavigationDrawerFragment extends ListFragment
         Intent i = new Intent(getActivity(), MainActivity_.class);
         i.setAction(Intent.ACTION_VIEW);
         i.setData(Uri.withAppendedPath(StopsProvider.CONTENT_URI, String.valueOf(id)));
+        i.putExtra("favorite", true);
         startActivity(i);
         getListView().setItemChecked(position, true);
         if (mDrawerLayout != null) {

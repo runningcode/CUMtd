@@ -11,6 +11,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+
 public class AboutFragment extends DialogFragment {
 
     @SuppressWarnings("ConstantConditions")
@@ -34,6 +37,11 @@ public class AboutFragment extends DialogFragment {
         source.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Tracker t = ((CUMtdApplication) getActivity().getApplication()).getTracker();
+                t.send(new HitBuilders.EventBuilder()
+                        .setCategory("View licenses")
+                        .setAction("View")
+                        .build());
                 Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github" +
                         ".com/runningcode/cumtd"));
                 startActivity(i);
@@ -53,5 +61,13 @@ public class AboutFragment extends DialogFragment {
                 .setView(layout)
                 .setPositiveButton(getString(R.string.close), null)
                 .create();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Tracker t = ((CUMtdApplication) getActivity().getApplication()).getTracker();
+        t.setScreenName(((Object) this).getClass().getSimpleName());
+        t.send(new HitBuilders.AppViewBuilder().build());
     }
 }

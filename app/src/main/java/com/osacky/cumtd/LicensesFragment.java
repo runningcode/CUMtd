@@ -7,6 +7,9 @@ import android.support.v4.app.DialogFragment;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EFragment;
 import org.apache.commons.io.IOUtils;
@@ -31,6 +34,14 @@ public class LicensesFragment extends DialogFragment {
                 .setNegativeButton(R.string.close, null)
                 .setView(root)
                 .create();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Tracker t = ((CUMtdApplication) getActivity().getApplication()).getTracker();
+        t.setScreenName(((Object) this).getClass().getSimpleName());
+        t.send(new HitBuilders.AppViewBuilder().build());
     }
 
     @Background

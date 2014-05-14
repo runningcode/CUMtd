@@ -38,8 +38,8 @@ class GetStopResponseListener implements PendingRequestListener<GetDeparturesRes
     List<GroundOverlay> mBusMarkers;
 
     public GetStopResponseListener bind(String stopId, Marker marker,
-                                   GoogleMap map, SpiceManager spiceManager,
-                                   List<GroundOverlay> busMarkers) {
+                                        GoogleMap map, SpiceManager spiceManager,
+                                        List<GroundOverlay> busMarkers) {
         mStopId = stopId;
         mMarker = marker;
         mMap = map;
@@ -57,6 +57,8 @@ class GetStopResponseListener implements PendingRequestListener<GetDeparturesRes
     @Override
     public void onRequestFailure(SpiceException spiceException) {
         spiceException.printStackTrace();
+        mMarker.setSnippet(spiceException.getCause().getMessage());
+        mMarker.showInfoWindow();
     }
 
     @Override

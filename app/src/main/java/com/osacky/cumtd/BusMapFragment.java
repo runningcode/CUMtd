@@ -17,6 +17,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
@@ -70,6 +72,7 @@ public class BusMapFragment extends SupportMapFragment
     private LocationClient mLocationClient;
     private LoadingInterface mLoadingInterface;
     private List<GroundOverlay> busMarkers = new ArrayList<>();
+    private Tracker t;
 
     static {
         if (!BuildConfig.DEBUG) {
@@ -82,7 +85,7 @@ public class BusMapFragment extends SupportMapFragment
         super.onCreate(savedInstanceState);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         gpsOn = sharedPreferences.getBoolean(PREF_GPS, true);
-        setRetainInstance(true);
+        t = ((CUMtdApplication) getActivity().getApplication()).getTracker();
     }
 
     @Override
@@ -107,11 +110,11 @@ public class BusMapFragment extends SupportMapFragment
                     config.getPixelInsetBottom());
             return;
         }
-        if (savedInstanceState == null) {
+        if (savedInstanceState == null || mClusterManager == null) {
             getMap().clear();
             mClusterManager = new ClusterManager<>(getActivity().getApplicationContext(), getMap());
             final StopPointRenderer stopPointRenderer = new StopPointRenderer(getActivity()
-                    .getApplicationContext(), getMap(),
+                    .getApplication(), getMap(),
                     mClusterManager, getSpiceManager(), busMarkers
             );
             mClusterManager.setRenderer(stopPointRenderer);
@@ -137,6 +140,9 @@ public class BusMapFragment extends SupportMapFragment
 
     @Override
     public void onStart() {
+        Tracker t = ((CUMtdApplication) getActivity().getApplication()).getTracker();
+        t.setScreenName(((Object) this).getClass().getSimpleName());
+        t.send(new HitBuilders.AppViewBuilder().build());
         spiceManager.start(getActivity());
         if (mLocationClient != null) {
             mLocationClient.connect();
@@ -170,7 +176,7 @@ public class BusMapFragment extends SupportMapFragment
     @Override
     public void onRequestNotFound() {
         mLoadingInterface.onLoadingStarted();
-        getSpiceManager().execute(new GetStopsSpiceRequest(getActivity()), this);
+        getSpiceManager().execute(new GetStopsSpiceRequest(getActivity().getApplication()), this);
     }
 
     @Override
@@ -237,6 +243,10 @@ public class BusMapFragment extends SupportMapFragment
         final SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(PREF_GPS, gpsOn);
         editor.commit();
+        t.send(new HitBuilders.EventBuilder()
+                .setCategory(Constants.GPS_EVENT)
+                .setAction(String.valueOf(gpsOn))
+                .build());
     }
 
     @Override
@@ -261,6 +271,13 @@ public class BusMapFragment extends SupportMapFragment
         double lat = cursor.getDouble(cursor.getColumnIndex(StopTable.LAT_COL));
         double lon = cursor.getDouble(cursor.getColumnIndex(StopTable.LON_COL));
         cursor.close();
+        final boolean favorite = intent.getBooleanExtra("favorite", false);
+        final String label = favorite ? Constants.STOP_FAV_CLICK : Constants.STOP_SEARCHED;
+        t.send(new HitBuilders.EventBuilder()
+                .setCategory(Constants.STOP_EVENT)
+                .setAction(stopId)
+                .setLabel(label)
+                .build());
         MarkerOptions markerOptions = new MarkerOptions().title(title).position(new LatLng(lat,
                 lon));
         addMarker(markerOptions, lat, lon, stopId);
