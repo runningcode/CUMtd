@@ -13,6 +13,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * Optimistically fetch clusters for adjacent zoom levels, caching them as necessary.
  */
+@SuppressWarnings("Convert2Diamond")
 public class PreCachingAlgorithmDecorator<T extends ClusterItem> implements Algorithm<T> {
     private final Algorithm<T> mAlgorithm;
 
@@ -22,6 +23,11 @@ public class PreCachingAlgorithmDecorator<T extends ClusterItem> implements Algo
 
     public PreCachingAlgorithmDecorator(Algorithm<T> algorithm) {
         mAlgorithm = algorithm;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return mAlgorithm.isEmpty();
     }
 
     public void addItem(T item) {

@@ -24,6 +24,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * ClusterManager should be added to the map as an: <ul> <li>{@link com.google.android.gms.maps.GoogleMap.OnCameraChangeListener}</li>
  * <li>{@link com.google.android.gms.maps.GoogleMap.OnMarkerClickListener}</li> </ul>
  */
+@SuppressWarnings("Convert2Diamond")
 public class ClusterManager<T extends ClusterItem> implements GoogleMap.OnCameraChangeListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnInfoWindowClickListener {
     private final MarkerManager mMarkerManager;
     private final MarkerManager.Collection mMarkers;
@@ -98,6 +99,10 @@ public class ClusterManager<T extends ClusterItem> implements GoogleMap.OnCamera
         cluster();
     }
 
+    public boolean isEmpty() {
+        return mAlgorithm.isEmpty();
+    }
+
     public void clearItems() {
         mAlgorithmLock.writeLock().lock();
         try {
@@ -153,7 +158,7 @@ public class ClusterManager<T extends ClusterItem> implements GoogleMap.OnCamera
     /**
      * Might re-cluster.
      *
-     * @param cameraPosition
+     * @param cameraPosition the current camera position
      */
     @Override
     public void onCameraChange(CameraPosition cameraPosition) {

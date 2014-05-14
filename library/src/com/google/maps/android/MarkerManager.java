@@ -19,6 +19,7 @@ import java.util.Set;
  * All marker operations (adds and removes) should occur via its collection class. That is, don't
  * add a marker via a collection, then remove it via Marker.remove()
  */
+@SuppressWarnings("Convert2Diamond")
 public class MarkerManager implements GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnMarkerDragListener, GoogleMap.InfoWindowAdapter {
     private final GoogleMap mMap;
 
@@ -35,6 +36,7 @@ public class MarkerManager implements GoogleMap.OnInfoWindowClickListener, Googl
 
     /**
      * Create a new named collection, which can later be looked up by {@link #getCollection(String)}
+     *
      * @param id a unique id for this collection.
      */
     public Collection newCollection(String id) {
@@ -48,6 +50,7 @@ public class MarkerManager implements GoogleMap.OnInfoWindowClickListener, Googl
 
     /**
      * Gets a named collection that was created by {@link #newCollection(String)}
+     *
      * @param id the unique id for this collection.
      */
     public Collection getCollection(String id) {
@@ -83,10 +86,7 @@ public class MarkerManager implements GoogleMap.OnInfoWindowClickListener, Googl
     @Override
     public boolean onMarkerClick(Marker marker) {
         Collection collection = mAllMarkers.get(marker);
-        if (collection != null && collection.mMarkerClickListener != null) {
-            return collection.mMarkerClickListener.onMarkerClick(marker);
-        }
-        return false;
+        return collection != null && collection.mMarkerClickListener != null && collection.mMarkerClickListener.onMarkerClick(marker);
     }
 
     @Override
@@ -148,6 +148,10 @@ public class MarkerManager implements GoogleMap.OnInfoWindowClickListener, Googl
                 return true;
             }
             return false;
+        }
+
+        public boolean isEmpty() {
+            return mMarkers.isEmpty();
         }
 
         public void clear() {

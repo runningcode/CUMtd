@@ -15,23 +15,20 @@ import android.view.Window;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
-import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.FragmentById;
 
-@EActivity(R.layout.activity_main)
+@EActivity
 public class MainActivity extends ActionBarActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks,
-        LoadingInterface {
+        implements LoadingInterface {
 
     @SuppressWarnings("unused")
     private static final String TAG = MainActivity.class.getSimpleName();
 
     @FragmentById(R.id.map_fragment)
-    BusMapFragment mapFragment;
+    protected BusMapFragment mapFragment;
 
-    @FragmentById(R.id.navigation_drawer)
-    NavigationDrawerFragment mNavigationDrawerFragment;
+    private NavigationDrawerFragment mNavigationDrawerFragment;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -41,27 +38,24 @@ public class MainActivity extends ActionBarActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        setContentView(R.layout.activity_main);
+
+        mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(R.id
+                .navigation_drawer);
+
         mTitle = getTitle();
 
-        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        mNavigationDrawerFragment.setUp(
+                R.id.navigation_drawer,
+                (DrawerLayout) findViewById(R.id.drawer_layout));
+
         SystemBarTintManager systemBarTintManager = new SystemBarTintManager(this);
         systemBarTintManager.setStatusBarTintEnabled(true);
         systemBarTintManager.setStatusBarTintColor(getResources().getColor(R.color.action_bar_color_end));
         if (savedInstanceState == null) {
             handleIntent(getIntent());
         }
-    }
-
-    @AfterViews
-    void setUpNavigationDrawer() {
-        mNavigationDrawerFragment.setUp(
-                R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
-    }
-
-    @Override
-    public void onNavigationDrawerItemSelected(long id) {
-
     }
 
     public void restoreActionBar() {

@@ -40,16 +40,6 @@ public class NavigationDrawerFragment extends ListFragment
         implements LoaderManager.LoaderCallbacks<Cursor>, AdapterView.OnItemClickListener {
 
     /**
-     * Remember the position of the selected item.
-     */
-    private static final String STATE_SELECTED_POSITION = "selected_navigation_drawer_position";
-
-    /**
-     * A pointer to the current callbacks instance (the Activity).
-     */
-    private NavigationDrawerCallbacks mCallbacks;
-
-    /**
      * Helper component that ties the action bar to the navigation drawer.
      */
     private ActionBarDrawerToggle mDrawerToggle;
@@ -58,25 +48,12 @@ public class NavigationDrawerFragment extends ListFragment
     private View mFragmentContainerView;
     private SimpleCursorAdapter mCursorAdapter;
 
-    private int mCurrentSelectedPosition = 0;
     private static final int FAVS_LOADER_ID = 1;
     private static final String[] mFromColumns = {StopTable.NAME_COL,
             StopTable.CODE_COL};
     private static final int[] mToColumns = {android.R.id.text1, android.R.id.text2};
 
     public NavigationDrawerFragment() {
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        if (savedInstanceState != null) {
-            mCurrentSelectedPosition = savedInstanceState.getInt(STATE_SELECTED_POSITION);
-        }
-
-        // Select either the default item (0) or the last selected item.
-        selectItem(mCurrentSelectedPosition);
     }
 
     @Override
@@ -152,28 +129,9 @@ public class NavigationDrawerFragment extends ListFragment
         mDrawerLayout.setDrawerListener(mDrawerToggle);
     }
 
-    private void selectItem(int position) {
-        mCurrentSelectedPosition = position;
-        try {
-            getListView().setItemChecked(position, true);
-        } catch (IllegalStateException ignored) {
-        }
-        if (mDrawerLayout != null) {
-            mDrawerLayout.closeDrawer(mFragmentContainerView);
-        }
-        if (mCallbacks != null) {
-            mCallbacks.onNavigationDrawerItemSelected(position);
-        }
-    }
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        try {
-            mCallbacks = (NavigationDrawerCallbacks) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException("Activity must implement NavigationDrawerCallbacks.");
-        }
         mCursorAdapter = new SimpleCursorAdapter(getActivity(),
                 R.layout.favs_list_item, null, mFromColumns, mToColumns, 0);
         setListAdapter(mCursorAdapter);
@@ -196,14 +154,7 @@ public class NavigationDrawerFragment extends ListFragment
     @Override
     public void onDetach() {
         super.onDetach();
-        mCallbacks = null;
         mCursorAdapter = null;
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt(STATE_SELECTED_POSITION, mCurrentSelectedPosition);
     }
 
     @Override
@@ -295,12 +246,5 @@ public class NavigationDrawerFragment extends ListFragment
         if (mDrawerLayout != null) {
             mDrawerLayout.closeDrawer(mFragmentContainerView);
         }
-        if (mCallbacks != null) {
-            mCallbacks.onNavigationDrawerItemSelected(position);
-        }
-    }
-
-    public static interface NavigationDrawerCallbacks {
-        void onNavigationDrawerItemSelected(long position);
     }
 }

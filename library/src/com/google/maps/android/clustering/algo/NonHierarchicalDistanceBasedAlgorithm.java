@@ -1,5 +1,13 @@
 package com.google.maps.android.clustering.algo;
 
+import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.clustering.Cluster;
+import com.google.maps.android.clustering.ClusterItem;
+import com.google.maps.android.geometry.Bounds;
+import com.google.maps.android.geometry.Point;
+import com.google.maps.android.projection.SphericalMercatorProjection;
+import com.google.maps.android.quadtree.PointQuadTree;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -8,14 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.google.android.gms.maps.model.LatLng;
-import com.google.maps.android.clustering.Cluster;
-import com.google.maps.android.clustering.ClusterItem;
-import com.google.maps.android.geometry.Bounds;
-import com.google.maps.android.geometry.Point;
-import com.google.maps.android.projection.SphericalMercatorProjection;
-import com.google.maps.android.quadtree.PointQuadTree;
 
 /**
  * A simple clustering algorithm with O(nlog n) performance. Resulting clusters are not
@@ -30,6 +30,7 @@ import com.google.maps.android.quadtree.PointQuadTree;
  * <p/>
  * Clusters have the center of the first element (not the centroid of the items within it).
  */
+@SuppressWarnings("Convert2Diamond")
 public class NonHierarchicalDistanceBasedAlgorithm<T extends ClusterItem> implements Algorithm<T> {
     public static final int MAX_DISTANCE_AT_ZOOM = 100; // essentially 100 dp.
 
@@ -44,6 +45,11 @@ public class NonHierarchicalDistanceBasedAlgorithm<T extends ClusterItem> implem
     private final PointQuadTree<QuadItem<T>> mQuadTree = new PointQuadTree<QuadItem<T>>(0, 1, 0, 1);
 
     private static final SphericalMercatorProjection PROJECTION = new SphericalMercatorProjection(1);
+
+    @Override
+    public boolean isEmpty() {
+        return mItems.isEmpty();
+    }
 
     @Override
     public void addItem(T item) {

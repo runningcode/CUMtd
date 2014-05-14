@@ -114,6 +114,7 @@ public class BusMapFragment extends SupportMapFragment
                     config.getPixelInsetBottom());
             return;
         }
+
         if (mClusterManager == null) {
             mClusterManager = new ClusterManager<>(getActivity().getApplicationContext(), getMap());
             final StopPointRenderer stopPointRenderer = new StopPointRenderer(getActivity()
@@ -128,9 +129,6 @@ public class BusMapFragment extends SupportMapFragment
             getMap().setOnCameraChangeListener(mClusterManager);
             getMap().setOnMarkerClickListener(mClusterManager);
             getMap().setMyLocationEnabled(gpsOn);
-            final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            final String cacheKey = sharedPreferences.getString(STOPS_CHANGESET_ID, "");
-            getSpiceManager().addListenerIfPending(StopList.class, cacheKey, this);
         }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             // this is a stupid hack since actionBarSize was returning zero
@@ -138,6 +136,11 @@ public class BusMapFragment extends SupportMapFragment
         } else {
             getMap().setPadding(0, config.getPixelInsetTop(true), config.getPixelInsetRight(),
                     config.getPixelInsetBottom());
+        }
+        if (mClusterManager.isEmpty()) {
+            final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            final String cacheKey = sharedPreferences.getString(STOPS_CHANGESET_ID, "");
+            getSpiceManager().addListenerIfPending(StopList.class, cacheKey, this);
         }
     }
 
@@ -190,7 +193,7 @@ public class BusMapFragment extends SupportMapFragment
 
     @Override
     public void onRequestSuccess(StopList stops) {
-        getMap().clear();
+        mClusterManager.clearItems();
         addStops(stops);
     }
 
