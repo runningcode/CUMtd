@@ -14,9 +14,9 @@
     </style>
 
     <style name="CustomActionBar" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
-        <item name="android:background">@color/actionBarColor</item>
+        <item name="android:background">@drawable/action_bar_gradient</item>
 
-        <item name="background">@color/actionBarColor</item>
+        <item name="background">@drawable/action_bar_gradient</item>
     </style>
 
 </resources>

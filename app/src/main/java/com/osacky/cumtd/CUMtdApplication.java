@@ -13,9 +13,9 @@ public class CUMtdApplication extends Application {
     public synchronized Tracker getTracker() {
         if (tracker == null) {
             GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
+            analytics.enableAutoActivityReports(this);
             if (BuildConfig.DEBUG) {
                 analytics.getLogger().setLogLevel(Logger.LogLevel.VERBOSE);
-                analytics.enableAutoActivityReports(this);
             }
             tracker = analytics.newTracker(R.xml.global_tracker);
         }

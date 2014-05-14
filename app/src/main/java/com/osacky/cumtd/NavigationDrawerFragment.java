@@ -7,7 +7,6 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.SearchRecentSuggestions;
 import android.provider.Settings;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.ListFragment;
@@ -184,7 +183,7 @@ public class NavigationDrawerFragment extends ListFragment
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setEmptyText(getString(R.string.no_favorites));
-        view.setBackgroundResource(R.color.actionBarColor);
+        view.setBackgroundResource(R.color.nav_bar_color);
         SystemBarTintManager systemBarTintManager = new SystemBarTintManager(getActivity());
         SystemBarTintManager.SystemBarConfig config = systemBarTintManager.getConfig();
         getListView().setPadding(0, config.getPixelInsetTop(true), 0,
@@ -235,11 +234,6 @@ public class NavigationDrawerFragment extends ListFragment
                 new AboutFragment().show(getFragmentManager(),
                         "ABOUT_FRAG");
                 return true;
-            case R.id.action_clear_history:
-                SearchRecentSuggestions suggestions = new SearchRecentSuggestions(getActivity(),
-                        StopSuggestionProvider.AUTHORITY, StopSuggestionProvider.MODE);
-                suggestions.clearHistory();
-                return true;
             case R.id.action_search_settings:
                 Intent intent = new Intent(Settings.ACTION_SEARCH_SETTINGS);
                 try {
@@ -274,7 +268,7 @@ public class NavigationDrawerFragment extends ListFragment
             case FAVS_LOADER_ID:
                 return new CursorLoader(getActivity(),
                         StopsProvider.FAV_URI, null,
-                        null, null, null);
+                        null, null, StopTable.NAME_COL);
             default:
                 return null;
         }

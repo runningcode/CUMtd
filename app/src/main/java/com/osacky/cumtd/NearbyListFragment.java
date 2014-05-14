@@ -86,7 +86,7 @@ public class NearbyListFragment extends BaseSpiceListFragment
 
     @Override
     public void onRequestSuccess(StopList stops) {
-        mListAdapter.addAll(stops);
+//        mListAdapter.addAll(stops);
         if (isResumed()) {
             setListShown(true);
         } else {
@@ -96,6 +96,6 @@ public class NearbyListFragment extends BaseSpiceListFragment
 
     @ItemClick
     void listItemClicked(Stop stop) {
-        StopDeparturesActivity_.intent(getActivity()).stopId(stop.getStopId()).start();
+//        StopDeparturesActivity_.intent(getActivity()).stopId(stop.getStopId()).start();
     }
 }

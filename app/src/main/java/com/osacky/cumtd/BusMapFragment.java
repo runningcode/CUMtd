@@ -63,6 +63,9 @@ public class BusMapFragment extends SupportMapFragment
         GooglePlayServicesClient.OnConnectionFailedListener {
 
     @SuppressWarnings("unused")
+    private static final String LOG_TAG = BusMapFragment.class.getSimpleName();
+
+    @SuppressWarnings("unused")
     private static final String TAG = BusMapFragment.class.getName();
     private static final String[] QUERY_PROJECTION = new String[]{StopTable.NAME_COL,
             StopTable.STOP_ID, StopTable.LAT_COL, StopTable.LON_COL};
@@ -85,6 +88,7 @@ public class BusMapFragment extends SupportMapFragment
         super.onCreate(savedInstanceState);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         gpsOn = sharedPreferences.getBoolean(PREF_GPS, true);
+        setRetainInstance(true);
         t = ((CUMtdApplication) getActivity().getApplication()).getTracker();
     }
 
@@ -110,8 +114,7 @@ public class BusMapFragment extends SupportMapFragment
                     config.getPixelInsetBottom());
             return;
         }
-        if (savedInstanceState == null || mClusterManager == null) {
-            getMap().clear();
+        if (mClusterManager == null) {
             mClusterManager = new ClusterManager<>(getActivity().getApplicationContext(), getMap());
             final StopPointRenderer stopPointRenderer = new StopPointRenderer(getActivity()
                     .getApplication(), getMap(),
@@ -130,7 +133,7 @@ public class BusMapFragment extends SupportMapFragment
             getSpiceManager().addListenerIfPending(StopList.class, cacheKey, this);
         }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-            // this is a stupid hack since actionbarsize was returning zero
+            // this is a stupid hack since actionBarSize was returning zero
             getMap().setPadding(0, 60, 0, 0);
         } else {
             getMap().setPadding(0, config.getPixelInsetTop(true), config.getPixelInsetRight(),
@@ -187,6 +190,7 @@ public class BusMapFragment extends SupportMapFragment
 
     @Override
     public void onRequestSuccess(StopList stops) {
+        getMap().clear();
         addStops(stops);
     }
 

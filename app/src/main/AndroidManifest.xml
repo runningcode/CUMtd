@@ -38,22 +38,7 @@
                 android:resource="@xml/searchable"/>
         </activity>
 
-        <activity
-            android:name=".StopDeparturesActivity_"
-            android:label="@string/stop_frag_title"
-            android:parentActivityName=".MainActivity_">
-
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.osacky.cumtd.MainActivity_"/>
-        </activity>
-
-
         <service android:name=".api.CUMTDApiService"/>
-
-        <provider
-            android:authorities="com.osacky.cumtd.StopSuggestionProvider"
-            android:name=".StopSuggestionProvider"/>
 
         <provider
             android:authorities="com.osacky.cumtd.StopsProvider"

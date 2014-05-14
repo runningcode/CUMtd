@@ -3,7 +3,6 @@ package com.osacky.cumtd;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.SearchRecentSuggestions;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -26,7 +25,8 @@ public class MainActivity extends ActionBarActivity
         LoadingInterface {
 
     @SuppressWarnings("unused")
-    private static final String TAG = MainActivity.class.getName();
+    private static final String TAG = MainActivity.class.getSimpleName();
+
     @FragmentById(R.id.map_fragment)
     BusMapFragment mapFragment;
 
@@ -42,10 +42,11 @@ public class MainActivity extends ActionBarActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mTitle = getTitle();
+
         supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         SystemBarTintManager systemBarTintManager = new SystemBarTintManager(this);
         systemBarTintManager.setStatusBarTintEnabled(true);
-        systemBarTintManager.setStatusBarTintColor(getResources().getColor(R.color.actionBarColor));
+        systemBarTintManager.setStatusBarTintColor(getResources().getColor(R.color.action_bar_color_end));
         if (savedInstanceState == null) {
             handleIntent(getIntent());
         }
@@ -82,12 +83,7 @@ public class MainActivity extends ActionBarActivity
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 
-        // fix a bug on android 4.0
-        if (mNavigationDrawerFragment == null) {
-            mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.navigation_drawer);
-        }
-        if (!mNavigationDrawerFragment.isDrawerOpen()) {
+        if (mNavigationDrawerFragment == null || !mNavigationDrawerFragment.isDrawerOpen()) {
             restoreActionBar();
         }
         return super.onCreateOptionsMenu(menu);
@@ -102,9 +98,6 @@ public class MainActivity extends ActionBarActivity
     void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
-                    StopSuggestionProvider.AUTHORITY, StopSuggestionProvider.MODE);
-            suggestions.saveRecentQuery(query, null);
             SearchResultsFragment_.builder().query(query).build().show(getSupportFragmentManager
                     (), "RESULTS");
         } else if (Intent.ACTION_VIEW.equals(intent.getAction())) {

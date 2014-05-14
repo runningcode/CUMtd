@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="actionBarColor">#cccc</color>
+    <color name="action_bar_color_end">#66465256</color>
+    <color name="action_bar_color_start">#efff</color>
+    <color name="nav_bar_color">#dfff</color>
 </resources>
