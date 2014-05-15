@@ -1,9 +1,11 @@
 package com.osacky.cumtd;
 
+import android.content.AsyncQueryHandler;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
@@ -33,11 +35,11 @@ public class StopPointRenderer extends DefaultClusterRenderer<Stop>
 
     @SuppressWarnings("unused")
     private static final String TAG = StopPointRenderer.class.getName();
-    private static final String[] IS_FAV_PROJECTION = new String[]{StopTable.IS_FAV};
     private static final int MIN_CLUSTER_SIZE = 4;
-    private SpiceManager mSpiceManager;
+
     private final List<GroundOverlay> mBusMarkers;
     private final Context mContext;
+    private SpiceManager mSpiceManager;
     private Tracker t;
 
     public StopPointRenderer(@NotNull Context context, GoogleMap map, ClusterManager<Stop>
@@ -96,32 +98,31 @@ public class StopPointRenderer extends DefaultClusterRenderer<Stop>
     }
 
     @Override
-    public View getInfoContents(Marker marker) {
-        boolean isFav = isMarkerFav(marker);
-        return MarkerInfoView_.build(mContext).bind(marker, isFav);
-    }
-
-    private boolean isMarkerFav(Marker marker) {
-        final Cursor cursor = mContext.getContentResolver().query(StopsProvider.CONTENT_URI,
-                IS_FAV_PROJECTION,
-                StopTable.NAME_COL + "=?",
-                new String[]{marker.getTitle()},
-                null);
-        boolean isFav;
-        assert cursor != null;
-        cursor.moveToFirst();
-        isFav = cursor.getInt(cursor.getColumnIndex(StopTable.IS_FAV)) == 1;
-        cursor.close();
-        return isFav;
+    public View getInfoContents(final Marker marker) {
+        return MarkerInfoView_.build(mContext).bind(marker);
     }
 
     @Override
     public void onInfoWindowClick(Marker marker) {
-        boolean isFav = isMarkerFav(marker);
-        ContentValues contentValues = new ContentValues(1);
-        contentValues.put(StopTable.IS_FAV, !isFav);
-        mContext.getContentResolver().update(StopsProvider.CONTENT_URI, contentValues,
-                StopTable.NAME_COL + "=?", new String[]{marker.getTitle()});
-        marker.showInfoWindow();
+        new IsFavAsyncQuery(mContext.getContentResolver(), marker) {
+            @Override
+            protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
+                cursor.moveToFirst();
+                final boolean isFav = !(cursor.getInt(cursor.getColumnIndex(StopTable.IS_FAV)) ==
+                        1);
+                if (isFav) {
+                    Toast.makeText(mContext, mContext.getString(R.string.fav_added), Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(mContext, mContext.getString(R.string.fav_removed), Toast.LENGTH_SHORT).show();
+                }
+                cursor.close();
+                final ContentValues contentValues = new ContentValues(1);
+                contentValues.put(StopTable.IS_FAV, isFav);
+                new AsyncQueryHandler(mContext.getContentResolver()) {
+                }
+                        .startUpdate(0, null, StopsProvider.CONTENT_URI, contentValues,
+                                StopTable.NAME_COL + "=?", new String[]{mMarker.getTitle()});
+            }
+        }.performQuery();
     }
 }

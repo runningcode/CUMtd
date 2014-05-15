@@ -1,20 +1,30 @@
 package com.osacky.cumtd.api;
 
+import android.util.Log;
+
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.octo.android.robospice.retrofit.RetrofitGsonSpiceService;
+import com.osacky.cumtd.BuildConfig;
 
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.converter.Converter;
 import retrofit.converter.GsonConverter;
+import roboguice.util.temp.Ln;
 
 public class CUMTDApiService extends RetrofitGsonSpiceService {
 
     private static final String SERVER_URL = "https://developer.cumtd.com/api/v2.2/json";
     private static final String API_KEY = "d0c958a61534448c808f35a8b64a6cb9";
     private static final int THREAD_COUNT = 2;
+
+    static {
+        if (!BuildConfig.DEBUG) {
+            Ln.getConfig().setLoggingLevel(Log.ERROR);
+        }
+    }
 
     private static final RequestInterceptor requestInterceptor = new RequestInterceptor() {
         @Override

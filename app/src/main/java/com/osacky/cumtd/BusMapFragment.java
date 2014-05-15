@@ -88,8 +88,8 @@ public class BusMapFragment extends SupportMapFragment
         super.onCreate(savedInstanceState);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         gpsOn = sharedPreferences.getBoolean(PREF_GPS, true);
-        setRetainInstance(true);
         t = ((CUMtdApplication) getActivity().getApplication()).getTracker();
+        setRetainInstance(true);
     }
 
     @Override
@@ -137,11 +137,7 @@ public class BusMapFragment extends SupportMapFragment
             getMap().setPadding(0, config.getPixelInsetTop(true), config.getPixelInsetRight(),
                     config.getPixelInsetBottom());
         }
-        if (mClusterManager.isEmpty()) {
-            final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            final String cacheKey = sharedPreferences.getString(STOPS_CHANGESET_ID, "");
-            getSpiceManager().addListenerIfPending(StopList.class, cacheKey, this);
-        }
+
     }
 
     @Override
@@ -152,6 +148,11 @@ public class BusMapFragment extends SupportMapFragment
         spiceManager.start(getActivity());
         if (mLocationClient != null) {
             mLocationClient.connect();
+        }
+        if (mClusterManager.isEmpty()) {
+            final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            final String cacheKey = sharedPreferences.getString(STOPS_CHANGESET_ID, "");
+            getSpiceManager().addListenerIfPending(StopList.class, cacheKey, this);
         }
         super.onStart();
     }

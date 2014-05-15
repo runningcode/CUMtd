@@ -26,5 +26,7 @@
     <string name="no_results">No results found for %s</string>
     <string name="favorites_title">Favorites</string>
     <string name="no_favorites">No favorites</string>
+    <string name="fav_added">Added to favorites</string>
+    <string name="fav_removed">Removed from favorites</string>
 
 </resources>

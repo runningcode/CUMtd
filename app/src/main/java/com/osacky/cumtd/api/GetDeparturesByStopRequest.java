@@ -1,11 +1,10 @@
 package com.osacky.cumtd.api;
 
+import com.google.common.collect.ImmutableMap;
 import com.octo.android.robospice.persistence.DurationInMillis;
 import com.octo.android.robospice.request.CachedSpiceRequest;
 import com.octo.android.robospice.request.retrofit.RetrofitSpiceRequest;
 import com.osacky.cumtd.models.GetDeparturesResponse;
-
-import java.util.HashMap;
 
 public class GetDeparturesByStopRequest extends RetrofitSpiceRequest<GetDeparturesResponse, CUMTDApi> {
 
@@ -13,12 +12,10 @@ public class GetDeparturesByStopRequest extends RetrofitSpiceRequest<GetDepartur
     private static final long cacheDuration = DurationInMillis.ALWAYS_EXPIRED;
     private static final int mMaxDepartures = 10;
     private static final int mTime = 60;
-    private static final HashMap<String, Integer> params = new HashMap<>();
-
-    static {
-        params.put("pt", mTime);
-        params.put("count", mMaxDepartures);
-    }
+    private static final ImmutableMap<String, Integer> params = ImmutableMap.of(
+            "pt", mTime,
+            "count", mMaxDepartures
+    );
 
     public GetDeparturesByStopRequest(String stopId) {
         super(GetDeparturesResponse.class, CUMTDApi.class);

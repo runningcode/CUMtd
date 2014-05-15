@@ -15,7 +15,9 @@ public class CUMtdApplication extends Application {
             GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
             analytics.enableAutoActivityReports(this);
             if (BuildConfig.DEBUG) {
-                analytics.getLogger().setLogLevel(Logger.LogLevel.VERBOSE);
+                analytics.setDryRun(true);
+            } else {
+                analytics.getLogger().setLogLevel(Logger.LogLevel.ERROR);
             }
             tracker = analytics.newTracker(R.xml.global_tracker);
         }
